@@ -61,6 +61,7 @@ struct NodePrefs { // persisted to file
   float adc_multiplier;
   char owner_info[120];
   uint8_t rx_boosted_gain; // power settings
+  uint8_t radio_fem_rxgain; // LoRa FEM RX gain setting
   uint8_t path_hash_mode;   // which path mode to use when sending
   uint8_t loop_detect;
   uint8_t fan_mode;
@@ -69,6 +70,7 @@ struct NodePrefs { // persisted to file
   uint16_t bridge_peer_port;   // peer MQTT broker port (MQTT bridge only, default 1883)
   char bridge_peer_username[65]; // peer MQTT broker username (MQTT bridge only)
   char bridge_peer_password[96]; // peer MQTT broker password (MQTT bridge only)
+  uint8_t cad_enabled;      // hardware Channel Activity Detection before TX (boolean)
 };
 
 class CommonCLICallbacks {
@@ -119,8 +121,8 @@ public:
     // no op by default
   };
 
-  virtual void setRxBoostedGain(bool enable) {
-    // no op by default
+  virtual bool setRxBoostedGain(bool enable) {
+    return false; // CommonCLI reports unsupported if not overridden by wrapper
   };
 };
 
