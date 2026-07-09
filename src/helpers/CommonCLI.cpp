@@ -88,38 +88,29 @@ void CommonCLI::loadPrefsInt(FILESYSTEM* fs, const char* filename) {
     file.read((uint8_t *)&_prefs->discovery_mod_timestamp, sizeof(_prefs->discovery_mod_timestamp)); // 162
     file.read((uint8_t *)&_prefs->adc_multiplier, sizeof(_prefs->adc_multiplier));                 // 166
     file.read((uint8_t *)_prefs->owner_info, sizeof(_prefs->owner_info));                          // 170
-    if (file.available() >= (int)sizeof(_prefs->rx_boosted_gain)) {
-      file.read((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));            // 290
-    }
-    if (file.available() >= (int)sizeof(_prefs->flood_max_unscoped)) {
-      file.read((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));      // 291
-    }
+    file.read((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));               // 290
+    file.read((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));         // 291
+    file.read((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));             // 292
+    file.read((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));             // 293
+    file.read((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                       // 294
+    // upstream layout ends at 295; EastMesh-only fields are appended below
     if (file.available() >= (int)sizeof(_prefs->fan_mode)) {
-      file.read((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                          // 292
+      file.read((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                          // 295
     }
     if (file.available() >= (int)sizeof(_prefs->fan_timeout_secs)) {
-      file.read((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));          // 293
-    }
-    if (file.available() >= (int)sizeof(_prefs->flood_max_advert)) {
-      file.read((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));          // 295
+      file.read((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));          // 296
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_host)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));          // 296
+      file.read((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));          // 298
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_port)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));          // 360
+      file.read((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));          // 362
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_username)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));  // 362
+      file.read((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));  // 364
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_password)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));  // 427
-    }
-    if (file.available() >= (int)sizeof(_prefs->radio_fem_rxgain)) {
-      file.read((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));          // 523
-    }
-    if (file.available() >= (int)sizeof(_prefs->cad_enabled)) {
-      file.read((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                    // 524
+      file.read((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));  // 429
     }
     // next: 525
 
@@ -151,10 +142,10 @@ void CommonCLI::loadPrefsInt(FILESYSTEM* fs, const char* filename) {
 
     // sanitise settings
     _prefs->rx_boosted_gain = constrain(_prefs->rx_boosted_gain, 0, 1); // boolean
-    _prefs->fan_mode = constrain(_prefs->fan_mode, 0, 2);
-    _prefs->fan_timeout_secs = constrain(_prefs->fan_timeout_secs, 0, 600);
     _prefs->radio_fem_rxgain = constrain(_prefs->radio_fem_rxgain, 0, 1); // boolean
     _prefs->cad_enabled = constrain(_prefs->cad_enabled, 0, 1); // boolean
+    _prefs->fan_mode = constrain(_prefs->fan_mode, 0, 2);
+    _prefs->fan_timeout_secs = constrain(_prefs->fan_timeout_secs, 0, 600);
 
     file.close();
   }
@@ -215,17 +206,18 @@ void CommonCLI::savePrefs(FILESYSTEM* fs) {
     file.write((uint8_t *)&_prefs->discovery_mod_timestamp, sizeof(_prefs->discovery_mod_timestamp)); // 162
     file.write((uint8_t *)&_prefs->adc_multiplier, sizeof(_prefs->adc_multiplier));                 // 166
     file.write((uint8_t *)_prefs->owner_info, sizeof(_prefs->owner_info));                          // 170
-    file.write((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));              // 290
-    file.write((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));        // 291
-    file.write((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                            // 292
-    file.write((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));            // 293
-    file.write((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));            // 295
-    file.write((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));            // 296
-    file.write((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));            // 360
-    file.write((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));    // 362
-    file.write((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));    // 427
-    file.write((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));            // 523
-    file.write((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                      // 524
+    file.write((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));               // 290
+    file.write((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));         // 291
+    file.write((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));             // 292
+    file.write((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));             // 293
+    file.write((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                       // 294
+    // upstream layout ends at 295; EastMesh-only fields are appended below
+    file.write((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                            // 295
+    file.write((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));            // 296
+    file.write((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));            // 298
+    file.write((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));            // 362
+    file.write((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));    // 364
+    file.write((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));    // 429
     // next: 525
 
     file.close();
