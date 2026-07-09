@@ -27,6 +27,39 @@ static bool isValidName(const char *n) {
   return true;
 }
 
+// NodePrefs is persisted at fixed byte offsets, so a field's position is fixed by the
+// order it is written, not by its position in the struct. Upstream's fields keep their
+// upstream offsets and end at PREFS_UPSTREAM_END; EastMesh-only fields live above
+// PREFS_EASTMESH_BASE, behind a reserved gap, so upstream can append fields without
+// shifting them. Raise PREFS_UPSTREAM_END when upstream's block grows.
+#define PREFS_UPSTREAM_END   295
+#define PREFS_EASTMESH_BASE  512
+
+static_assert(PREFS_UPSTREAM_END <= PREFS_EASTMESH_BASE,
+              "upstream NodePrefs fields have overrun the EastMesh reserved gap");
+
+static void writePrefsGap(File& file, int num_bytes) {
+  uint8_t pad[16];
+  memset(pad, 0, sizeof(pad));
+  while (num_bytes > 0) {
+    int n = num_bytes < (int)sizeof(pad) ? num_bytes : (int)sizeof(pad);
+    file.write(pad, n);
+    num_bytes -= n;
+  }
+}
+
+static void skipPrefsGap(File& file, int num_bytes) {
+  uint8_t pad[16];
+  while (num_bytes > 0) {
+    int avail = file.available();
+    if (avail <= 0) break;   // prefs file predates the gap; leave defaults in place
+    int n = num_bytes < (int)sizeof(pad) ? num_bytes : (int)sizeof(pad);
+    if (n > avail) n = avail;
+    file.read(pad, n);
+    num_bytes -= n;
+  }
+}
+
 void CommonCLI::loadPrefs(FILESYSTEM* fs) {
   if (fs->exists("/com_prefs")) {
     loadPrefsInt(fs, "/com_prefs");   // new filename
@@ -93,26 +126,30 @@ void CommonCLI::loadPrefsInt(FILESYSTEM* fs, const char* filename) {
     file.read((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));             // 292
     file.read((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));             // 293
     file.read((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                       // 294
-    // upstream layout ends at 295; EastMesh-only fields are appended below
+    // upstream layout ends here (PREFS_UPSTREAM_END)
+
+    skipPrefsGap(file, PREFS_EASTMESH_BASE - PREFS_UPSTREAM_END);   // reserved for upstream growth
+
+    // EastMesh-only fields, based at PREFS_EASTMESH_BASE
     if (file.available() >= (int)sizeof(_prefs->fan_mode)) {
-      file.read((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                          // 295
+      file.read((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                          // 512
     }
     if (file.available() >= (int)sizeof(_prefs->fan_timeout_secs)) {
-      file.read((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));          // 296
+      file.read((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));          // 513
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_host)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));          // 298
+      file.read((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));          // 515
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_port)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));          // 362
+      file.read((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));          // 579
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_username)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));  // 364
+      file.read((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));  // 581
     }
     if (file.available() >= (int)sizeof(_prefs->bridge_peer_password)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));  // 429
+      file.read((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));  // 646
     }
-    // next: 525
+    // next: 742
 
     // sanitise bad pref values
     _prefs->rx_delay_base = constrain(_prefs->rx_delay_base, 0, 20.0f);
@@ -211,14 +248,18 @@ void CommonCLI::savePrefs(FILESYSTEM* fs) {
     file.write((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));             // 292
     file.write((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));             // 293
     file.write((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                       // 294
-    // upstream layout ends at 295; EastMesh-only fields are appended below
-    file.write((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                            // 295
-    file.write((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));            // 296
-    file.write((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));            // 298
-    file.write((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));            // 362
-    file.write((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));    // 364
-    file.write((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));    // 429
-    // next: 525
+    // upstream layout ends here (PREFS_UPSTREAM_END)
+
+    writePrefsGap(file, PREFS_EASTMESH_BASE - PREFS_UPSTREAM_END);   // reserved for upstream growth
+
+    // EastMesh-only fields, based at PREFS_EASTMESH_BASE
+    file.write((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                            // 512
+    file.write((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));            // 513
+    file.write((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));            // 515
+    file.write((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));            // 579
+    file.write((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));    // 581
+    file.write((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));    // 646
+    // next: 742
 
     file.close();
   }
