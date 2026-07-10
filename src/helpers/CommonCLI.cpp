@@ -60,6 +60,14 @@ static void skipPrefsGap(File& file, int num_bytes) {
   }
 }
 
+// Callers must stop at the first false: once a field is missing, everything after it is
+// misaligned, and a short tail would otherwise still satisfy a later, smaller field.
+static bool readPrefsField(File& file, void* dst, size_t len) {
+  if (file.available() < (int)len) return false;
+  file.read((uint8_t *)dst, len);
+  return true;
+}
+
 void CommonCLI::loadPrefs(FILESYSTEM* fs) {
   if (fs->exists("/com_prefs")) {
     loadPrefsInt(fs, "/com_prefs");   // new filename
@@ -130,25 +138,16 @@ void CommonCLI::loadPrefsInt(FILESYSTEM* fs, const char* filename) {
 
     skipPrefsGap(file, PREFS_EASTMESH_BASE - PREFS_UPSTREAM_END);   // reserved for upstream growth
 
-    // EastMesh-only fields, based at PREFS_EASTMESH_BASE
-    if (file.available() >= (int)sizeof(_prefs->fan_mode)) {
-      file.read((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                          // 512
-    }
-    if (file.available() >= (int)sizeof(_prefs->fan_timeout_secs)) {
-      file.read((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));          // 513
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_host)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));          // 515
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_port)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));          // 579
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_username)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));  // 581
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_password)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));  // 646
-    }
+    // EastMesh-only fields, based at PREFS_EASTMESH_BASE. An older prefs file simply ends
+    // early, so read until the first field that isn't fully present and leave the rest at
+    // their constructor defaults.
+    bool ok = true;
+    ok = ok && readPrefsField(file, &_prefs->fan_mode, sizeof(_prefs->fan_mode));                        // 512
+    ok = ok && readPrefsField(file, &_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));        // 513
+    ok = ok && readPrefsField(file, _prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));         // 515
+    ok = ok && readPrefsField(file, &_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));        // 579
+    ok = ok && readPrefsField(file, _prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username)); // 581
+    ok = ok && readPrefsField(file, _prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password)); // 646
     // next: 742
 
     // sanitise bad pref values
