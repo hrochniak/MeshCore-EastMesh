@@ -2,7 +2,8 @@
 
 namespace mqtt_ca_certs {
 
-// EastMesh currently presents a Let's Encrypt E7-issued certificate.
+// EastMesh presented a Let's Encrypt E7-issued certificate until July 2026,
+// when it moved to a Google Trust Services WE1 wildcard (see kCombinedPem).
 static const char kEastmeshIsrgRootX1Pem[] =
 R"PEM(-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw

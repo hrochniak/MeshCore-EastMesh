@@ -277,6 +277,28 @@ releases:
         text: "Added `packets_sent` and `packets_received` counters to the MQTT `status` payload `stats` object, reporting cumulative radio TX/RX packet totals to align with the Waev/MeshMapper status schema."
     breaking_changes: []
 
+  - track: observer-eastmesh
+    version: "2026.7.0"
+    tag: "observer-eastmesh-v2026.7.0"
+    date: "2026-07-19"
+    previous_version: "2026.6.6"
+    summary: "Syncs Observer firmware with the latest upstream MeshCore dev changes, realigns saved settings storage with upstream, and restores EastMesh/MeshMapper broker TLS trust."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Merged upstream MeshCore dev updates including power-off/deep-sleep improvements, SX1262 LDO support, hardware channel-activity detection, radio gain fixes, and board/platform fixes."
+      - type: fixed
+        area: prefs
+        text: "Realigned saved node settings to upstream byte offsets and moved EastMesh-specific fields behind a reserved gap so future upstream syncs no longer shift or corrupt them."
+      - type: fixed
+        area: mqtt
+        text: "Restored EastMesh and MeshMapper broker TLS trust after mqtt2.eastmesh.au moved from Let's Encrypt to a Google Trust Services certificate."
+      - type: changed
+        area: build
+        text: "Bumped CI build and docs workflows to Python 3.13."
+    breaking_changes:
+      - "The saved settings layout changed; devices upgrading from 2026.6.6 or earlier may need EastMesh-specific settings (such as fan control and bridge peer) and recently added radio settings reconfigured."
+
   - track: observer-eastmesh-bridge-espnow
     version: "2026.5.1"
     tag: "observer-eastmesh-bridge-espnow-v2026.5.1"
@@ -465,3 +487,25 @@ releases:
         area: mqtt
         text: "Added `packets_sent` and `packets_received` counters to the MQTT `status` payload `stats` object, reporting cumulative radio TX/RX packet totals to align with the Waev/MeshMapper status schema."
     breaking_changes: []
+
+  - track: observer-eastmesh-bridge-espnow
+    version: "2026.7.0"
+    tag: "observer-eastmesh-bridge-espnow-v2026.7.0"
+    date: "2026-07-19"
+    previous_version: "2026.6.6"
+    summary: "Syncs Observer ESP-NOW bridge firmware with the latest upstream MeshCore dev changes, realigns saved settings storage with upstream, and restores EastMesh/MeshMapper broker TLS trust."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Merged upstream MeshCore dev updates including power-off/deep-sleep improvements, SX1262 LDO support, hardware channel-activity detection, radio gain fixes, and board/platform fixes."
+      - type: fixed
+        area: prefs
+        text: "Realigned saved node settings to upstream byte offsets and moved EastMesh-specific fields behind a reserved gap so future upstream syncs no longer shift or corrupt them."
+      - type: fixed
+        area: mqtt
+        text: "Restored EastMesh and MeshMapper broker TLS trust after mqtt2.eastmesh.au moved from Let's Encrypt to a Google Trust Services certificate."
+      - type: changed
+        area: build
+        text: "Bumped CI build and docs workflows to Python 3.13."
+    breaking_changes:
+      - "The saved settings layout changed; devices upgrading from 2026.6.6 or earlier may need EastMesh-specific settings (such as fan control and bridge peer) and recently added radio settings reconfigured."
