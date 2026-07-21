@@ -9,9 +9,9 @@ runs:
         path: |
           ~/.cache/uv
           .venv
-        key: ${{ runner.os }}-py311-uv-${{ hashFiles('uv.lock', 'pyproject.toml') }}
+        key: ${{ runner.os }}-py313-uv-${{ hashFiles('uv.lock', 'pyproject.toml') }}
         restore-keys: |
-          ${{ runner.os }}-py311-uv-
+          ${{ runner.os }}-py313-uv-
 
     - name: Restore PlatformIO Cache
       uses: actions/cache@v5
@@ -28,7 +28,7 @@ runs:
     - name: Install Python
       uses: actions/setup-python@v6
       with:
-        python-version: "3.11"
+        python-version: "3.13"
 
     - name: Install uv
       uses: astral-sh/setup-uv@v8.0.0

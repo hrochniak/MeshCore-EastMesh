@@ -27,6 +27,47 @@ static bool isValidName(const char *n) {
   return true;
 }
 
+// NodePrefs is persisted at fixed byte offsets, so a field's position is fixed by the
+// order it is written, not by its position in the struct. Upstream's fields keep their
+// upstream offsets and end at PREFS_UPSTREAM_END; EastMesh-only fields live above
+// PREFS_EASTMESH_BASE, behind a reserved gap, so upstream can append fields without
+// shifting them. Raise PREFS_UPSTREAM_END when upstream's block grows.
+#define PREFS_UPSTREAM_END   295
+#define PREFS_EASTMESH_BASE  512
+
+static_assert(PREFS_UPSTREAM_END <= PREFS_EASTMESH_BASE,
+              "upstream NodePrefs fields have overrun the EastMesh reserved gap");
+
+static void writePrefsGap(File& file, int num_bytes) {
+  uint8_t pad[16];
+  memset(pad, 0, sizeof(pad));
+  while (num_bytes > 0) {
+    int n = num_bytes < (int)sizeof(pad) ? num_bytes : (int)sizeof(pad);
+    file.write(pad, n);
+    num_bytes -= n;
+  }
+}
+
+static void skipPrefsGap(File& file, int num_bytes) {
+  uint8_t pad[16];
+  while (num_bytes > 0) {
+    int avail = file.available();
+    if (avail <= 0) break;   // prefs file predates the gap; leave defaults in place
+    int n = num_bytes < (int)sizeof(pad) ? num_bytes : (int)sizeof(pad);
+    if (n > avail) n = avail;
+    file.read(pad, n);
+    num_bytes -= n;
+  }
+}
+
+// Callers must stop at the first false: once a field is missing, everything after it is
+// misaligned, and a short tail would otherwise still satisfy a later, smaller field.
+static bool readPrefsField(File& file, void* dst, size_t len) {
+  if (file.available() < (int)len) return false;
+  file.read((uint8_t *)dst, len);
+  return true;
+}
+
 void CommonCLI::loadPrefs(FILESYSTEM* fs) {
   if (fs->exists("/com_prefs")) {
     loadPrefsInt(fs, "/com_prefs");   // new filename
@@ -88,34 +129,26 @@ void CommonCLI::loadPrefsInt(FILESYSTEM* fs, const char* filename) {
     file.read((uint8_t *)&_prefs->discovery_mod_timestamp, sizeof(_prefs->discovery_mod_timestamp)); // 162
     file.read((uint8_t *)&_prefs->adc_multiplier, sizeof(_prefs->adc_multiplier));                 // 166
     file.read((uint8_t *)_prefs->owner_info, sizeof(_prefs->owner_info));                          // 170
-    if (file.available() >= (int)sizeof(_prefs->rx_boosted_gain)) {
-      file.read((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));            // 290
-    }
-    if (file.available() >= (int)sizeof(_prefs->flood_max_unscoped)) {
-      file.read((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));      // 291
-    }
-    if (file.available() >= (int)sizeof(_prefs->fan_mode)) {
-      file.read((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                          // 292
-    }
-    if (file.available() >= (int)sizeof(_prefs->fan_timeout_secs)) {
-      file.read((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));          // 293
-    }
-    if (file.available() >= (int)sizeof(_prefs->flood_max_advert)) {
-      file.read((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));          // 295
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_host)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));          // 296
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_port)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));          // 360
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_username)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));  // 362
-    }
-    if (file.available() >= (int)sizeof(_prefs->bridge_peer_password)) {
-      file.read((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));  // 427
-    }
-    // next: 523
+    file.read((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));               // 290
+    file.read((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));         // 291
+    file.read((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));             // 292
+    file.read((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));             // 293
+    file.read((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                       // 294
+    // upstream layout ends here (PREFS_UPSTREAM_END)
+
+    skipPrefsGap(file, PREFS_EASTMESH_BASE - PREFS_UPSTREAM_END);   // reserved for upstream growth
+
+    // EastMesh-only fields, based at PREFS_EASTMESH_BASE. An older prefs file simply ends
+    // early, so read until the first field that isn't fully present and leave the rest at
+    // their constructor defaults.
+    bool ok = true;
+    ok = ok && readPrefsField(file, &_prefs->fan_mode, sizeof(_prefs->fan_mode));                        // 512
+    ok = ok && readPrefsField(file, &_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));        // 513
+    ok = ok && readPrefsField(file, _prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));         // 515
+    ok = ok && readPrefsField(file, &_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));        // 579
+    ok = ok && readPrefsField(file, _prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username)); // 581
+    ok = ok && readPrefsField(file, _prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password)); // 646
+    // next: 742
 
     // sanitise bad pref values
     _prefs->rx_delay_base = constrain(_prefs->rx_delay_base, 0, 20.0f);
@@ -145,6 +178,8 @@ void CommonCLI::loadPrefsInt(FILESYSTEM* fs, const char* filename) {
 
     // sanitise settings
     _prefs->rx_boosted_gain = constrain(_prefs->rx_boosted_gain, 0, 1); // boolean
+    _prefs->radio_fem_rxgain = constrain(_prefs->radio_fem_rxgain, 0, 1); // boolean
+    _prefs->cad_enabled = constrain(_prefs->cad_enabled, 0, 1); // boolean
     _prefs->fan_mode = constrain(_prefs->fan_mode, 0, 2);
     _prefs->fan_timeout_secs = constrain(_prefs->fan_timeout_secs, 0, 600);
 
@@ -207,16 +242,23 @@ void CommonCLI::savePrefs(FILESYSTEM* fs) {
     file.write((uint8_t *)&_prefs->discovery_mod_timestamp, sizeof(_prefs->discovery_mod_timestamp)); // 162
     file.write((uint8_t *)&_prefs->adc_multiplier, sizeof(_prefs->adc_multiplier));                 // 166
     file.write((uint8_t *)_prefs->owner_info, sizeof(_prefs->owner_info));                          // 170
-    file.write((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));              // 290
-    file.write((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));        // 291
-    file.write((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                            // 292
-    file.write((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));            // 293
-    file.write((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));            // 295
-    file.write((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));            // 296
-    file.write((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));            // 360
-    file.write((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));    // 362
-    file.write((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));    // 427
-    // next: 523
+    file.write((uint8_t *)&_prefs->rx_boosted_gain, sizeof(_prefs->rx_boosted_gain));               // 290
+    file.write((uint8_t *)&_prefs->flood_max_unscoped, sizeof(_prefs->flood_max_unscoped));         // 291
+    file.write((uint8_t *)&_prefs->flood_max_advert, sizeof(_prefs->flood_max_advert));             // 292
+    file.write((uint8_t *)&_prefs->radio_fem_rxgain, sizeof(_prefs->radio_fem_rxgain));             // 293
+    file.write((uint8_t *)&_prefs->cad_enabled, sizeof(_prefs->cad_enabled));                       // 294
+    // upstream layout ends here (PREFS_UPSTREAM_END)
+
+    writePrefsGap(file, PREFS_EASTMESH_BASE - PREFS_UPSTREAM_END);   // reserved for upstream growth
+
+    // EastMesh-only fields, based at PREFS_EASTMESH_BASE
+    file.write((uint8_t *)&_prefs->fan_mode, sizeof(_prefs->fan_mode));                            // 512
+    file.write((uint8_t *)&_prefs->fan_timeout_secs, sizeof(_prefs->fan_timeout_secs));            // 513
+    file.write((uint8_t *)&_prefs->bridge_peer_host, sizeof(_prefs->bridge_peer_host));            // 515
+    file.write((uint8_t *)&_prefs->bridge_peer_port, sizeof(_prefs->bridge_peer_port));            // 579
+    file.write((uint8_t *)&_prefs->bridge_peer_username, sizeof(_prefs->bridge_peer_username));    // 581
+    file.write((uint8_t *)&_prefs->bridge_peer_password, sizeof(_prefs->bridge_peer_password));    // 646
+    // next: 742
 
     file.close();
   }
@@ -541,6 +583,10 @@ void CommonCLI::handleSetCmd(uint32_t sender_timestamp, char* command, char* rep
     _prefs->interference_threshold = atoi(&config[11]);
     savePrefs();
     strcpy(reply, "OK");
+  } else if (memcmp(config, "cad ", 4) == 0) {
+    _prefs->cad_enabled = memcmp(&config[4], "on", 2) == 0;
+    savePrefs();
+    strcpy(reply, "OK");
   } else if (memcmp(config, "agc.reset.interval ", 19) == 0) {
     _prefs->agc_reset_interval = atoi(&config[19]) / 4;
     savePrefs();
@@ -602,13 +648,37 @@ void CommonCLI::handleSetCmd(uint32_t sender_timestamp, char* command, char* rep
     _prefs->disable_fwd = memcmp(&config[7], "off", 3) == 0;
     savePrefs();
     strcpy(reply, _prefs->disable_fwd ? "OK - repeat is now OFF" : "OK - repeat is now ON");
-#if defined(USE_SX1262) || defined(USE_SX1268) || defined(USE_LR1110)
   } else if (memcmp(config, "radio.rxgain ", 13) == 0) {
-    _prefs->rx_boosted_gain = memcmp(&config[13], "on", 2) == 0;
-    strcpy(reply, "OK");
+    bool enabled = memcmp(&config[13], "on", 2) == 0;
+    _prefs->rx_boosted_gain = enabled;
     savePrefs();
-    _callbacks->setRxBoostedGain(_prefs->rx_boosted_gain);
-#endif
+    if (_callbacks->setRxBoostedGain(enabled)) {
+      strcpy(reply, "OK");
+    } else {
+      strcpy(reply, "Error: unsupported");
+    }
+  } else if (memcmp(config, "radio.fem.rxgain ", 17) == 0) {
+    if (!_board->canControlLoRaFemLna()) {
+      strcpy(reply, "Error: unsupported");
+    } else if (memcmp(&config[17], "on", 2) == 0) {
+      if (_board->setLoRaFemLnaEnabled(true)) {
+        _prefs->radio_fem_rxgain = 1;
+        savePrefs();
+        strcpy(reply, "OK - LoRa FEM RX gain on");
+      } else {
+        strcpy(reply, "Error: failed to apply LoRa FEM RX gain");
+      }
+    } else if (memcmp(&config[17], "off", 3) == 0) {
+      if (_board->setLoRaFemLnaEnabled(false)) {
+        _prefs->radio_fem_rxgain = 0;
+        savePrefs();
+        strcpy(reply, "OK - LoRa FEM RX gain off");
+      } else {
+        strcpy(reply, "Error: failed to apply LoRa FEM RX gain");
+      }
+    } else {
+      strcpy(reply, "Error: state must be on or off");
+    }
   } else if (memcmp(config, "radio ", 6) == 0) {
     strcpy(tmp, &config[6]);
     const char *parts[4];
@@ -844,7 +914,7 @@ void CommonCLI::handleSetCmd(uint32_t sender_timestamp, char* command, char* rep
       }
     } else {
       _prefs->adc_multiplier = 0.0f;
-      strcpy(reply, "Error: unsupported by this board");
+      strcpy(reply, "Error: unsupported");
     };
   } else {
     strcpy(reply, "unknown config: ");
@@ -863,6 +933,8 @@ void CommonCLI::handleGetCmd(uint32_t sender_timestamp, char* command, char* rep
     sprintf(reply, "> %s", StrHelper::ftoa(_prefs->airtime_factor));
   } else if (memcmp(config, "int.thresh", 10) == 0) {
     sprintf(reply, "> %d", (uint32_t) _prefs->interference_threshold);
+  } else if (memcmp(config, "cad", 3) == 0) {
+    sprintf(reply, "> %s", _prefs->cad_enabled ? "on" : "off");
   } else if (memcmp(config, "agc.reset.interval", 18) == 0) {
     sprintf(reply, "> %d", ((uint32_t) _prefs->agc_reset_interval) * 4);
   } else if (memcmp(config, "multi.acks", 10) == 0) {
@@ -888,10 +960,14 @@ void CommonCLI::handleGetCmd(uint32_t sender_timestamp, char* command, char* rep
     sprintf(reply, "> %s", StrHelper::ftoa(_prefs->node_lat));
   } else if (memcmp(config, "lon", 3) == 0) {
     sprintf(reply, "> %s", StrHelper::ftoa(_prefs->node_lon));
-#if defined(USE_SX1262) || defined(USE_SX1268) || defined(USE_LR1110)
   } else if (memcmp(config, "radio.rxgain", 12) == 0) {
     sprintf(reply, "> %s", _prefs->rx_boosted_gain ? "on" : "off");
-#endif
+  } else if (memcmp(config, "radio.fem.rxgain", 16) == 0) {
+    if (!_board->canControlLoRaFemLna()) {
+      strcpy(reply, "Error: unsupported");
+    } else {
+      sprintf(reply, "> %s", _board->isLoRaFemLnaEnabled() ? "on" : "off");
+    }
   } else if (memcmp(config, "radio", 5) == 0) {
     char freq[16], bw[16];
     strcpy(freq, StrHelper::ftoa(_prefs->freq));
@@ -991,12 +1067,12 @@ void CommonCLI::handleGetCmd(uint32_t sender_timestamp, char* command, char* rep
           strcpy(reply, "> unknown");
       }
   #else
-      strcpy(reply, "ERROR: unsupported");
+      strcpy(reply, "Error: unsupported");
   #endif
   } else if (memcmp(config, "adc.multiplier", 14) == 0) {
     float adc_mult = _board->getAdcMultiplier();
     if (adc_mult == 0.0f) {
-      strcpy(reply, "Error: unsupported by this board");
+      strcpy(reply, "Error: unsupported");
     } else {
       sprintf(reply, "> %.3f", adc_mult);
     }
@@ -1014,13 +1090,9 @@ void CommonCLI::handleGetCmd(uint32_t sender_timestamp, char* command, char* rep
     strcpy(reply, "ERROR: Power management not supported");
 #endif
   } else if (memcmp(config, "pwrmgt.bootreason", 17) == 0) {
-#ifdef NRF52_POWER_MANAGEMENT
     sprintf(reply, "> Reset: %s; Shutdown: %s",
       _board->getResetReasonString(_board->getResetReason()),
       _board->getShutdownReasonString(_board->getShutdownReason()));
-#else
-    strcpy(reply, "ERROR: Power management not supported");
-#endif
   } else if (memcmp(config, "pwrmgt.bootmv", 13) == 0) {
 #ifdef NRF52_POWER_MANAGEMENT
     sprintf(reply, "> %u mV", _board->getBootVoltage());

@@ -199,7 +199,9 @@ const char* MQTTUplink::brokerCaCert(const BrokerSpec& spec) {
   // Note: ESP32 targets with the certificate bundle attach it instead of these PEMs;
   // this fallback only applies on builds without CONFIG_MBEDTLS_CERTIFICATE_BUNDLE.
   if (spec.bit == kEastmeshBit || spec.bit == kMeshmapperBit) {
-    return mqtt_ca_certs::kEastmeshIsrgRootX1Pem;  // Let's Encrypt ISRG Root X1
+    // eastmesh.au switched from Let's Encrypt to a Google Trust Services WE1
+    // wildcard cert (July 2026); trust both so a switch back doesn't brick uplinks.
+    return mqtt_ca_certs::kCombinedPem;  // ISRG Root X1 + GTS WE1
   }
   // waev (mqtt.waev.app) presents a Google Trust Services WE1 chain, same issuer as LetsMesh.
   return mqtt_ca_certs::kLetsmeshWe1Pem;  // Google Trust Services WE1
