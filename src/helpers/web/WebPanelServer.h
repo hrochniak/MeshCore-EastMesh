@@ -4,6 +4,7 @@
 
 #if defined(ESP_PLATFORM)
   #include <WiFi.h>
+  #include <helpers/IdentityStore.h>
   #if defined(WITH_MQTT_UPLINK) && !defined(WITH_WEB_PANEL)
     #define WITH_WEB_PANEL 1
   #endif
@@ -39,6 +40,7 @@ public:
   WebPanelServer();
 
   void setCommandRunner(WebPanelCommandRunner* runner);
+  void setFilesystem(FILESYSTEM* fs) { _fs = fs; }
   bool start();
   void stop(bool clear_session = true);
   void stopRedirectServer();
@@ -53,6 +55,7 @@ private:
     WebPanelServer* self;
   };
 
+  FILESYSTEM* _fs;
   WebPanelCommandRunner* _runner;
   httpd_handle_t _server;
   httpd_handle_t _redirect_server;
@@ -70,6 +73,12 @@ private:
   static esp_err_t handleCommand(httpd_req_t* req);
   static esp_err_t handleFirmwareUpdate(httpd_req_t* req);
   static esp_err_t handleStats(httpd_req_t* req);
+  static esp_err_t handleMqttCaGet(httpd_req_t* req);
+  static esp_err_t handleMqttCaPost(httpd_req_t* req);
+  static esp_err_t handleMqttCaDelete(httpd_req_t* req);
+  static esp_err_t handleMqttCa2Get(httpd_req_t* req);
+  static esp_err_t handleMqttCa2Post(httpd_req_t* req);
+  static esp_err_t handleMqttCa2Delete(httpd_req_t* req);
 
   bool readRequestBody(httpd_req_t* req, char* buffer, size_t buffer_size) const;
   void refreshToken();

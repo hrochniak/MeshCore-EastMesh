@@ -11,6 +11,17 @@
 
 #if defined(ESP_PLATFORM)
 #include <mqtt_client.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+
+struct QueuedMqttPacket {
+  mesh::Packet packet;
+  bool is_tx;
+  int rssi;
+  float snr;
+  int score;
+  int duration;
+};
 #endif
 
 struct MQTTStatusSnapshot {
@@ -75,6 +86,21 @@ public:
   const char* getCustomUsername() const { return _prefs.custom_username; }
   bool setCustomPassword(const char* password);
   bool hasCustomPassword() const { return _prefs.custom_password[0] != 0; }
+  bool setCustomTls(bool enabled);
+  bool isCustomTlsEnabled() const { return _prefs.custom_tls != 0; }
+
+  bool setCustom2Host(const char* host);
+  const char* getCustom2Host() const { return _prefs.custom2_host; }
+  bool setCustom2Port(const char* port);
+  uint16_t getCustom2Port() const { return _prefs.custom2_port; }
+  bool setCustom2Transport(const char* transport);
+  const char* getCustom2Transport() const;
+  bool setCustom2Username(const char* username);
+  const char* getCustom2Username() const { return _prefs.custom2_username; }
+  bool setCustom2Password(const char* password);
+  bool hasCustom2Password() const { return _prefs.custom2_password[0] != 0; }
+  bool setCustom2Tls(bool enabled);
+  bool isCustom2TlsEnabled() const { return _prefs.custom2_tls != 0; }
   bool sendStatusNow();
   bool isAnyBrokerConnected() const;
   const char* getAggregateBrokerState() const;
@@ -110,6 +136,7 @@ private:
     uint8_t reconnect_failures;
     char username[70];
     char* token;
+    char* custom_ca_cert;
     char client_id[48];
     char uri[144];
     char status_topic[128];
@@ -132,7 +159,8 @@ private:
 
 #if defined(ESP_PLATFORM)
   static constexpr uint8_t kEastmeshBit = 0x01;
-  static constexpr uint8_t kLetsmeshEuBit = 0x02;
+  static constexpr uint8_t kLetsmeshEuBit = 0x02;   // retained for upstream merge hygiene
+  static constexpr uint8_t kCustom2Bit = 0x02;       // MQTT 2 — reuses the letsmesh-eu slot
   static constexpr uint8_t kLetsmeshUsBit = 0x04;
   static constexpr uint8_t kCustomBit = 0x08;
   static constexpr uint8_t kMeshmapperBit = 0x10;
@@ -177,6 +205,9 @@ private:
   static void makeSafeToken(const char* input, char* output, size_t output_size);
   static void bytesToHexUpper(const uint8_t* src, size_t len, char* dst, size_t dst_size);
   static void formatIsoTimestamp(time_t ts, char* dst, size_t dst_size);
+
+  QueueHandle_t _publish_queue;
+  void performPublishPacket(const mesh::Packet& packet, bool is_tx, int rssi, float snr, int score, int duration);
 #endif
 
   bool savePrefs();

@@ -38,6 +38,15 @@ struct MQTTPrefs {
   // read back as zero here, which drives one-time migrations (see load()).
   uint8_t brokers_migrated;
   uint8_t mqtt_bridge_uplink_migrated;
+  uint8_t custom_tls;
+
+  // Custom2 broker settings
+  uint16_t custom2_port;
+  char custom2_host[96];
+  char custom2_username[65];
+  char custom2_password[96];
+  uint8_t custom2_transport;
+  uint8_t custom2_tls;
 };
 
 class MQTTPrefsStore {

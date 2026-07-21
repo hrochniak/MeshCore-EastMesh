@@ -431,11 +431,18 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
     .broker-grid.single { grid-template-columns:1fr; }
     .broker-grid.two { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .broker-grid.one-two { grid-template-columns:minmax(0,1fr) minmax(0,2fr); }
+    .broker-grid.dual { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
     .broker-card { background:var(--surface2); border:1px solid var(--border); border-radius:12px; padding:12px; display:grid; gap:10px; min-height:124px; align-content:start; }
     .broker-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
     .broker-copy { display:grid; gap:4px; min-width:0; }
     .broker-title { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
-    .broker-group-title { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; }
+    .broker-group-title { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; justify-content:space-between; }
+    .toggle-inline { display:inline-flex; align-items:center; cursor:pointer; position:relative; }
+    .toggle-inline input[type="checkbox"] { opacity:0; width:0; height:0; position:absolute; }
+    .toggle-slider { width:36px; height:20px; background:var(--border); border-radius:999px; display:inline-block; transition:background .2s; position:relative; }
+    .toggle-slider::before { content:""; position:absolute; width:14px; height:14px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; }
+    .toggle-inline input:checked + .toggle-slider { background:var(--accent); }
+    .toggle-inline input:checked + .toggle-slider::before { transform:translateX(16px); }
     .broker-state { font-size:13px; color:var(--text); }
     .broker-state.on { color:var(--accent); }
     .broker-mode { display:grid; gap:10px; align-content:start; height:100%; }
@@ -532,7 +539,7 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
       body { font-size:15px; }
       main { padding:16px; }
       .card { padding:16px; margin-bottom:14px; }
-      .row, .row3, .row-command, .metric-grid, .trend-grid, .hud-grid-1, .hud-grid-2, .hud-grid-3, .core-grid, .core-metrics, .broker-stack, .broker-slots, .broker-grid, .broker-grid.single, .broker-grid.two, .broker-grid.one-two { grid-template-columns:1fr; }
+      .row, .row3, .row-command, .metric-grid, .trend-grid, .hud-grid-1, .hud-grid-2, .hud-grid-3, .core-grid, .core-metrics, .broker-stack, .broker-slots, .broker-grid, .broker-grid.single, .broker-grid.two, .broker-grid.one-two, .broker-grid.dual { grid-template-columns:1fr; }
       .inline-actions { grid-template-columns:minmax(0,1fr) auto auto; }
       .fieldline { grid-template-columns:minmax(0,1fr) auto; align-items:center; }
       .row-command button { width:100%; }
@@ -875,73 +882,7 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
         <div class="field-card">
           <label class="label" for="mqttIata">MQTT IATA</label>
           <div class="inline-actions">
-            <select id="mqttIata">
-              <optgroup label="Configuration">
-                <option value="UNSET">UNSET - To be configured</option>
-              </optgroup>
-              <optgroup label="ACT">
-                <option value="CBR">CBR - Canberra</option>
-              </optgroup>
-              <optgroup label="New South Wales">
-                <option value="ABX">ABX - Albury</option>
-                <option value="ARM">ARM - Armidale</option>
-                <option value="BHQ">BHQ - Broken Hill</option>
-                <option value="BNK">BNK - Ballina</option>
-                <option value="CFS">CFS - Coffs Harbour</option>
-                <option value="DBO">DBO - Dubbo</option>
-                <option value="GFF">GFF - Griffith</option>
-                <option value="GFN">GFN - Grafton</option>
-                <option value="LDH">LDH - Lord Howe Island</option>
-                <option value="LSY">LSY - Lismore</option>
-                <option value="MIM">MIM - Merimbula</option>
-                <option value="MRZ">MRZ - Moree</option>
-                <option value="MYA">MYA - Moruya</option>
-                <option value="NTL">NTL - Newcastle</option>
-                <option value="OAG">OAG - Orange</option>
-                <option value="PQQ">PQQ - Port Macquarie</option>
-                <option value="SYD">SYD - Sydney</option>
-                <option value="WGA">WGA - Wagga Wagga</option>
-              </optgroup>
-              <optgroup label="Queensland">
-                <option value="ABM">ABM - Bamaga</option>
-                <option value="BNE">BNE - Brisbane</option>
-                <option value="CNS">CNS - Cairns</option>
-                <option value="HTI">HTI - Hamilton Island</option>
-                <option value="HVB">HVB - Hervey Bay</option>
-                <option value="ISA">ISA - Mount Isa</option>
-                <option value="LRE">LRE - Longreach</option>
-                <option value="MCY">MCY - Sunshine Coast</option>
-                <option value="MKY">MKY - Mackay</option>
-                <option value="OOL">OOL - Gold Coast</option>
-                <option value="PPP">PPP - Proserpine</option>
-                <option value="ROK">ROK - Rockhampton</option>
-                <option value="TSV">TSV - Townsville</option>
-                <option value="WEI">WEI - Weipa</option>
-                <option value="WTB">WTB - Toowoomba Wellcamp</option>
-              </optgroup>
-              <optgroup label="South Australia">
-                <option value="ADL">ADL - Adelaide</option>
-                <option value="KGC">KGC - Kingscote</option>
-                <option value="MGB">MGB - Mount Gambier</option>
-                <option value="PLO">PLO - Port Lincoln</option>
-                <option value="WYA">WYA - Whyalla</option>
-              </optgroup>
-              <optgroup label="Tasmania">
-                <option value="BWT">BWT - Burnie</option>
-                <option value="DPO">DPO - Devonport</option>
-                <option value="FLS">FLS - Flinders Island</option>
-                <option value="HBA">HBA - Hobart</option>
-                <option value="KNS">KNS - King Island</option>
-                <option value="LST">LST - Launceston</option>
-              </optgroup>
-              <optgroup label="Victoria">
-                <option value="AVV">AVV - Avalon</option>
-                <option value="GEX">GEX - Geelong West</option>
-                <option value="MEB">MEB - Essendon Fields</option>
-                <option value="MEL">MEL - Melbourne</option>
-                <option value="MQL">MQL - Mildura</option>
-              </optgroup>
-            </select>
+            <input id="mqttIata" placeholder="e.g. LAX" maxlength="3" style="text-transform:uppercase" type="text">
             <button class="iconbtn" data-load-cmd="get mqtt.iata" data-load-input="mqttIata" title="Refresh MQTT IATA">&#8635;</button>
             <button class="savebtn" data-prefix="set mqtt.iata " data-input="mqttIata">Save</button>
           </div>
@@ -964,68 +905,139 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
 	        </div>
 	        <div class="field-card">
 	          <label class="label">MQTT Servers</label>
-	          <div class="broker-stack">
-	            <div class="broker-slots">
-	              <div class="broker-slot">
-	                <label class="label" for="mqttPrimaryBroker">Primary MQTT</label>
-	                <select id="mqttPrimaryBroker" aria-label="Primary MQTT broker"></select>
+	          <div class="broker-grid dual">
+	            <!-- MQTT 1 panel -->
+	            <div class="broker-card" id="mqtt1Panel">
+	              <div class="broker-group-title">
+	                MQTT 1
+	                <label class="toggle-inline" title="Enable MQTT 1">
+	                  <input id="mqtt1Enabled" type="checkbox" aria-label="Enable MQTT 1">
+	                  <span class="toggle-slider"></span>
+	                </label>
 	              </div>
-	              <div class="broker-slot">
-	                <label class="label" for="mqttSecondaryBroker">Secondary MQTT</label>
-	                <select id="mqttSecondaryBroker" aria-label="Secondary MQTT broker"></select>
+	              <div class="field-card">
+	                <label class="label" for="mqttCustomEndpoint">Host:Port</label>
+	                <div class="inline-actions">
+	                  <input id="mqttCustomEndpoint" placeholder="mqtt.example.local:1883" maxlength="101">
+	                  <button id="refreshCustomEndpointBtn" class="iconbtn" title="Refresh MQTT 1 host and port">&#8635;</button>
+	                  <button id="saveCustomEndpointBtn" class="savebtn">Save</button>
+	                </div>
+	              </div>
+	              <div class="field-card">
+	                <label class="label" for="mqttCustomTransport">Transport</label>
+	                <div class="mode-slider">
+	                  <input id="mqttCustomTransport" type="range" min="0" max="1" step="1" value="0" aria-label="MQTT 1 transport">
+	                  <div class="mode-labels two" aria-hidden="true">
+	                    <div class="mode-label" data-custom-transport-label="tcp">TCP</div>
+	                    <div class="mode-label" data-custom-transport-label="wss">WSS</div>
+	                  </div>
+	                </div>
+	              </div>
+	              <div class="field-card">
+	                <label class="label" for="mqttCustomTls">TLS (SSL/MQTTS)</label>
+	                <div class="mode-slider">
+	                  <input id="mqttCustomTls" type="range" min="0" max="1" step="1" value="0" aria-label="MQTT 1 TLS">
+	                  <div class="mode-labels two" aria-hidden="true">
+	                    <div class="mode-label" data-custom-tls-label="off">Off</div>
+	                    <div class="mode-label" data-custom-tls-label="on">On</div>
+	                  </div>
+	                </div>
+	              </div>
+	              <div class="row">
+	                <div class="field-card">
+	                  <label class="label" for="mqttCustomUsername">Username</label>
+	                  <div class="inline-actions">
+	                    <input id="mqttCustomUsername" placeholder="username" maxlength="64">
+	                    <button class="iconbtn" data-load-cmd="get mqtt.custom.username" data-load-input="mqttCustomUsername" title="Refresh MQTT 1 username">&#8635;</button>
+	                    <button class="savebtn" data-prefix="set mqtt.custom.username " data-input="mqttCustomUsername">Save</button>
+	                  </div>
+	                </div>
+	                <div class="field-card">
+	                  <label class="label" for="mqttCustomPassword">Password</label>
+	                  <div class="inline-actions two-actions">
+	                    <input id="mqttCustomPassword" type="password" placeholder="password" maxlength="95">
+	                    <button class="savebtn" data-prefix="set mqtt.custom.password " data-input="mqttCustomPassword">Save</button>
+	                  </div>
+	                </div>
+	              </div>
+	              <div class="field-card" style="margin-top:10px">
+	                <label class="label" for="mqttCustomCaFile">Root CA Certificate (PEM)</label>
+	                <div class="inline-actions two-actions">
+	                  <span id="mqttCustomCaStatus" style="font-size:0.85em;color:var(--text-muted);align-self:center;margin-right:10px">Loading...</span>
+	                  <input type="file" id="mqttCustomCaFile" style="display:none" accept=".pem,.crt,.cer,.txt">
+	                  <button id="mqttCustomCaUploadBtn" class="savebtn" type="button" style="margin-right:5px">Upload</button>
+	                  <button id="mqttCustomCaDeleteBtn" class="savebtn deletebtn" type="button" style="display:none;background-color:#c0392b;color:#fff">Delete</button>
+	                </div>
 	              </div>
 	            </div>
-	            <input id="mqttEastmeshAu" class="visually-hidden" type="checkbox" tabindex="-1" aria-hidden="true">
-	            <input id="mqttMeshmapper" class="visually-hidden" type="checkbox" tabindex="-1" aria-hidden="true">
-	            <input id="mqttWaev" class="visually-hidden" type="checkbox" tabindex="-1" aria-hidden="true">
-	            <input id="mqttLetsmeshEu" class="visually-hidden" type="checkbox" tabindex="-1" aria-hidden="true">
-	            <input id="mqttLetsmeshUs" class="visually-hidden" type="checkbox" tabindex="-1" aria-hidden="true">
-	            <input id="mqttCustom" class="visually-hidden" type="checkbox" tabindex="-1" aria-hidden="true">
-	            <div class="broker-group wide" id="mqttCustomConfig" style="display:none">
-	              <div class="broker-group-title">Custom MQTT settings</div>
-	              <div class="broker-grid single">
-	                <div class="broker-card">
-	                  <div class="field-card">
-	                    <label class="label" for="mqttCustomEndpoint">Host:Port</label>
-	                    <div class="inline-actions">
-	                      <input id="mqttCustomEndpoint" placeholder="mqtt.example.local:1883" maxlength="101">
-	                      <button id="refreshCustomEndpointBtn" class="iconbtn" title="Refresh custom MQTT host and port">&#8635;</button>
-	                      <button id="saveCustomEndpointBtn" class="savebtn">Save</button>
-	                    </div>
+	            <!-- MQTT 2 panel -->
+	            <div class="broker-card" id="mqtt2Panel">
+	              <div class="broker-group-title">
+	                MQTT 2
+	                <label class="toggle-inline" title="Enable MQTT 2">
+	                  <input id="mqtt2Enabled" type="checkbox" aria-label="Enable MQTT 2">
+	                  <span class="toggle-slider"></span>
+	                </label>
+	              </div>
+	              <div class="field-card">
+	                <label class="label" for="mqttCustom2Endpoint">Host:Port</label>
+	                <div class="inline-actions">
+	                  <input id="mqttCustom2Endpoint" placeholder="mqtt2.example.local:1883" maxlength="101">
+	                  <button id="refreshCustom2EndpointBtn" class="iconbtn" title="Refresh MQTT 2 host and port">&#8635;</button>
+	                  <button id="saveCustom2EndpointBtn" class="savebtn">Save</button>
+	                </div>
+	              </div>
+	              <div class="field-card">
+	                <label class="label" for="mqttCustom2Transport">Transport</label>
+	                <div class="mode-slider">
+	                  <input id="mqttCustom2Transport" type="range" min="0" max="1" step="1" value="0" aria-label="MQTT 2 transport">
+	                  <div class="mode-labels two" aria-hidden="true">
+	                    <div class="mode-label" data-custom2-transport-label="tcp">TCP</div>
+	                    <div class="mode-label" data-custom2-transport-label="wss">WSS</div>
 	                  </div>
-	                  <div class="field-card">
-	                    <label class="label" for="mqttCustomTransport">Transport</label>
-	                    <div class="mode-slider">
-	                      <input id="mqttCustomTransport" type="range" min="0" max="1" step="1" value="0" aria-label="Custom MQTT transport">
-	                      <div class="mode-labels two" aria-hidden="true">
-	                        <div class="mode-label" data-custom-transport-label="tcp">TCP</div>
-	                        <div class="mode-label" data-custom-transport-label="wss">WSS</div>
-	                      </div>
-	                    </div>
+	                </div>
+	              </div>
+	              <div class="field-card">
+	                <label class="label" for="mqttCustom2Tls">TLS (SSL/MQTTS)</label>
+	                <div class="mode-slider">
+	                  <input id="mqttCustom2Tls" type="range" min="0" max="1" step="1" value="0" aria-label="MQTT 2 TLS">
+	                  <div class="mode-labels two" aria-hidden="true">
+	                    <div class="mode-label" data-custom2-tls-label="off">Off</div>
+	                    <div class="mode-label" data-custom2-tls-label="on">On</div>
 	                  </div>
-	                  <div class="row">
-	                    <div class="field-card">
-	                      <label class="label" for="mqttCustomUsername">Username</label>
-	                      <div class="inline-actions">
-	                        <input id="mqttCustomUsername" placeholder="username" maxlength="64">
-	                        <button class="iconbtn" data-load-cmd="get mqtt.custom.username" data-load-input="mqttCustomUsername" title="Refresh custom MQTT username">&#8635;</button>
-	                        <button class="savebtn" data-prefix="set mqtt.custom.username " data-input="mqttCustomUsername">Save</button>
-	                      </div>
-	                    </div>
-	                    <div class="field-card">
-	                      <label class="label" for="mqttCustomPassword">Password</label>
-	                      <div class="inline-actions two-actions">
-	                        <input id="mqttCustomPassword" type="password" placeholder="password" maxlength="95">
-	                        <button class="savebtn" data-prefix="set mqtt.custom.password " data-input="mqttCustomPassword">Save</button>
-	                      </div>
-	                    </div>
+	                </div>
+	              </div>
+	              <div class="row">
+	                <div class="field-card">
+	                  <label class="label" for="mqttCustom2Username">Username</label>
+	                  <div class="inline-actions">
+	                    <input id="mqttCustom2Username" placeholder="username" maxlength="64">
+	                    <button class="iconbtn" data-load-cmd="get mqtt.custom2.username" data-load-input="mqttCustom2Username" title="Refresh MQTT 2 username">&#8635;</button>
+	                    <button class="savebtn" data-prefix="set mqtt.custom2.username " data-input="mqttCustom2Username">Save</button>
 	                  </div>
+	                </div>
+	                <div class="field-card">
+	                  <label class="label" for="mqttCustom2Password">Password</label>
+	                  <div class="inline-actions two-actions">
+	                    <input id="mqttCustom2Password" type="password" placeholder="password" maxlength="95">
+	                    <button class="savebtn" data-prefix="set mqtt.custom2.password " data-input="mqttCustom2Password">Save</button>
+	                  </div>
+	                </div>
+	              </div>
+	              <div class="field-card" style="margin-top:10px">
+	                <label class="label" for="mqttCustom2CaFile">Root CA Certificate (PEM)</label>
+	                <div class="inline-actions two-actions">
+	                  <span id="mqttCustom2CaStatus" style="font-size:0.85em;color:var(--text-muted);align-self:center;margin-right:10px">Loading...</span>
+	                  <input type="file" id="mqttCustom2CaFile" style="display:none" accept=".pem,.crt,.cer,.txt">
+	                  <button id="mqttCustom2CaUploadBtn" class="savebtn" type="button" style="margin-right:5px">Upload</button>
+	                  <button id="mqttCustom2CaDeleteBtn" class="savebtn deletebtn" type="button" style="display:none;background-color:#c0392b;color:#fff">Delete</button>
 	                </div>
 	              </div>
 	            </div>
 	          </div>
-	          <div class="panel-note">A maximum of two MQTT brokers can be enabled at once.</div>
-	          <div id="mqttBrokerWarning" class="panel-warning"></div>
+	        </div>
+	        <div class="panel-note">A maximum of two MQTT brokers can be enabled at once.</div>
+	        <div id="mqttBrokerWarning" class="panel-warning"></div>
 	        </div>
 	        <div class="field-card" id="bridgePeerConfig" style="display:none">
 	          <label class="label" for="bridgePeerEndpoint">Mesh bridge peer MQTT host:port</label>
@@ -2610,9 +2622,17 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
     async function runPrefixed(prefix, inputId) {
       const input = document.getElementById(inputId);
       if (!input) return;
+      let value = input.value;
+      if (inputId === "mqttIata") {
+        value = value.toUpperCase();
+        input.value = value;
+      }
       const maxLength = Number.isFinite(input.maxLength) && input.maxLength > 0 ? input.maxLength : null;
-      const value = maxLength ? input.value.slice(0, maxLength) : input.value;
-      if (value !== input.value) input.value = value;
+      const checkValue = maxLength ? value.slice(0, maxLength) : value;
+      if (checkValue !== value) {
+        value = checkValue;
+        input.value = value;
+      }
       const result = await runCommand(prefix + value);
       if (!result.ok) return;
       if (inputId === "mqttIata") {
@@ -2730,76 +2750,21 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
         return null;
       }
     }
-    const MQTT_BROKERS = [
-      { key:"eastmesh-au", input:"mqttEastmeshAu", label:"EastMesh AU", set:"set mqtt.eastmesh-au" },
-      { key:"meshmapper", input:"mqttMeshmapper", label:"MeshMapper", set:"set mqtt.meshmapper" },
-      { key:"waev", input:"mqttWaev", label:"Waev", set:"set mqtt.waev" },
-      { key:"custom", input:"mqttCustom", label:"Custom", set:"set mqtt.custom", custom:true },
-      { key:"letsmesh-eu", input:"mqttLetsmeshEu", label:"LetsMesh EU (retired)", set:"set mqtt.letsmesh-eu" },
-      { key:"letsmesh-us", input:"mqttLetsmeshUs", label:"LetsMesh US (retired)", set:"set mqtt.letsmesh-us" }
-    ];
-    const MQTT_SLOT_IDS = ["mqttPrimaryBroker", "mqttSecondaryBroker"];
-    function brokerByKey(key) {
-      return MQTT_BROKERS.find((broker) => broker.key === key) || null;
-    }
-    function isBrokerChecked(broker) {
-      const input = document.getElementById(broker.input);
-      return !!(input && input.checked);
-    }
-    function enabledBrokerKeys() {
-      return MQTT_BROKERS.filter(isBrokerChecked).map((broker) => broker.key);
-    }
-    function buildBrokerSlotOptions() {
-      const optionsHtml = ['<option value="">None</option>']
-        .concat(MQTT_BROKERS.map((broker) => `<option value="${broker.key}">${broker.label}</option>`))
-        .join("");
-      MQTT_SLOT_IDS.forEach((slotId) => {
-        const select = document.getElementById(slotId);
-        if (select) select.innerHTML = optionsHtml;
-      });
-    }
-    function refreshBrokerSlotOptionStates() {
-      const selected = MQTT_SLOT_IDS.map((id) => {
-        const select = document.getElementById(id);
-        return select ? select.value : "";
-      });
-      MQTT_SLOT_IDS.forEach((slotId, idx) => {
-        const select = document.getElementById(slotId);
-        if (!select) return;
-        const other = selected[idx === 0 ? 1 : 0];
-        Array.from(select.options).forEach((option) => {
-          option.disabled = option.value !== "" && option.value === other;
-        });
-      });
-    }
-    function refreshCustomConfigVisibility() {
-      const config = document.getElementById("mqttCustomConfig");
-      if (!config) return;
-      const customSelected = MQTT_SLOT_IDS.some((id) => {
-        const select = document.getElementById(id);
-        return !!(select && select.value === "custom");
-      });
-      config.style.display = customSelected ? "" : "none";
-    }
-    function refreshBrokerSlotsFromState() {
-      const enabled = enabledBrokerKeys();
-      MQTT_SLOT_IDS.forEach((slotId, idx) => {
-        const select = document.getElementById(slotId);
-        if (select) select.value = enabled[idx] || "";
-      });
-      refreshBrokerSlotOptionStates();
-      refreshCustomConfigVisibility();
-    }
-    function setBrokerToggle(inputId, state) {
-      const input = document.getElementById(inputId);
-      if (!input) return;
-      input.checked = state === "on";
-      refreshBrokerSlotsFromState();
-    }
-    async function loadBrokerState(cmd, inputId, options = {}) {
-      const result = await runCommand(cmd, options);
+    // ── MQTT 1 / custom ────────────────────────────────────────────────────────
+    async function loadMqtt1State(options = {}) {
+      const result = await runCommand("get mqtt.custom", options);
       if (!result.ok) return;
-      setBrokerToggle(inputId, parseReplyValue(result.text));
+      const chk = document.getElementById("mqtt1Enabled");
+      if (chk) chk.checked = parseReplyValue(result.text) === "on";
+    }
+    async function setMqtt1Enabled(enabled) {
+      const result = await runCommand("set mqtt.custom " + (enabled ? "on" : "off"));
+      if (!result.ok) {
+        await loadMqtt1State({ recordHistory:false });
+        return;
+      }
+      const chk = document.getElementById("mqtt1Enabled");
+      if (chk) chk.checked = enabled;
     }
     async function loadCustomEndpoint(options = {}) {
       const hostResult = await runCommand("get mqtt.custom.host", options);
@@ -2837,6 +2802,30 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
       }
       refreshCustomTransportUi(mode);
     }
+    function refreshCustomTlsUi(tls) {
+      const mode = tls === "on" ? "on" : "off";
+      const slider = document.getElementById("mqttCustomTls");
+      if (slider) {
+        slider.value = mode === "on" ? "1" : "0";
+      }
+      document.querySelectorAll("[data-custom-tls-label]").forEach((label) => {
+        label.classList.toggle("active", label.dataset.customTlsLabel === mode);
+      });
+    }
+    async function loadCustomTls(options = {}) {
+      const result = await runCommand("get mqtt.custom.tls", options);
+      if (!result.ok) return;
+      refreshCustomTlsUi(parseReplyValue(result.text));
+    }
+    async function setCustomTls(tls) {
+      const mode = tls === "on" ? "on" : "off";
+      const result = await runCommand("set mqtt.custom.tls " + mode);
+      if (!result.ok) {
+        await loadCustomTls({ recordHistory:false });
+        return;
+      }
+      refreshCustomTlsUi(mode);
+    }
     function parseCustomEndpoint(value) {
       const endpoint = String(value || "").trim();
       const separator = endpoint.lastIndexOf(":");
@@ -2859,6 +2848,96 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
       const hostResult = await runCommand("set mqtt.custom.host " + parsed.host);
       if (!hostResult.ok) return;
       const portResult = await runCommand("set mqtt.custom.port " + parsed.port);
+      if (!portResult.ok) return;
+      input.value = `${parsed.host}:${parsed.port}`;
+    }
+    // ── MQTT 2 / custom2 ───────────────────────────────────────────────────────
+    async function loadMqtt2State(options = {}) {
+      const result = await runCommand("get mqtt.custom2", options);
+      if (!result.ok) return;
+      const chk = document.getElementById("mqtt2Enabled");
+      if (chk) chk.checked = parseReplyValue(result.text) === "on";
+    }
+    async function setMqtt2Enabled(enabled) {
+      const result = await runCommand("set mqtt.custom2 " + (enabled ? "on" : "off"));
+      if (!result.ok) {
+        await loadMqtt2State({ recordHistory:false });
+        return;
+      }
+      const chk = document.getElementById("mqtt2Enabled");
+      if (chk) chk.checked = enabled;
+    }
+    async function loadCustom2Endpoint(options = {}) {
+      const hostResult = await runCommand("get mqtt.custom2.host", options);
+      if (!hostResult.ok) return;
+      const portResult = await runCommand("get mqtt.custom2.port", options);
+      if (!portResult.ok) return;
+      const host = parseReplyValue(hostResult.text);
+      const port = parseReplyValue(portResult.text) || "1883";
+      const input = document.getElementById("mqttCustom2Endpoint");
+      if (input) {
+        input.value = host && host !== "-" ? `${host}:${port}` : "";
+      }
+    }
+    function refreshCustom2TransportUi(transport) {
+      const mode = transport === "wss" ? "wss" : "tcp";
+      const slider = document.getElementById("mqttCustom2Transport");
+      if (slider) {
+        slider.value = mode === "wss" ? "1" : "0";
+      }
+      document.querySelectorAll("[data-custom2-transport-label]").forEach((label) => {
+        label.classList.toggle("active", label.dataset.custom2TransportLabel === mode);
+      });
+    }
+    async function loadCustom2Transport(options = {}) {
+      const result = await runCommand("get mqtt.custom2.transport", options);
+      if (!result.ok) return;
+      refreshCustom2TransportUi(parseReplyValue(result.text));
+    }
+    async function setCustom2Transport(transport) {
+      const mode = transport === "wss" ? "wss" : "tcp";
+      const result = await runCommand("set mqtt.custom2.transport " + mode);
+      if (!result.ok) {
+        await loadCustom2Transport({ recordHistory:false });
+        return;
+      }
+      refreshCustom2TransportUi(mode);
+    }
+    function refreshCustom2TlsUi(tls) {
+      const mode = tls === "on" ? "on" : "off";
+      const slider = document.getElementById("mqttCustom2Tls");
+      if (slider) {
+        slider.value = mode === "on" ? "1" : "0";
+      }
+      document.querySelectorAll("[data-custom2-tls-label]").forEach((label) => {
+        label.classList.toggle("active", label.dataset.custom2TlsLabel === mode);
+      });
+    }
+    async function loadCustom2Tls(options = {}) {
+      const result = await runCommand("get mqtt.custom2.tls", options);
+      if (!result.ok) return;
+      refreshCustom2TlsUi(parseReplyValue(result.text));
+    }
+    async function setCustom2Tls(tls) {
+      const mode = tls === "on" ? "on" : "off";
+      const result = await runCommand("set mqtt.custom2.tls " + mode);
+      if (!result.ok) {
+        await loadCustom2Tls({ recordHistory:false });
+        return;
+      }
+      refreshCustom2TlsUi(mode);
+    }
+    async function saveCustom2Endpoint() {
+      const input = document.getElementById("mqttCustom2Endpoint");
+      if (!input) return;
+      const parsed = parseCustomEndpoint(input.value);
+      if (!parsed) {
+        statusEl.textContent = "Use host:port, for example mqtt2.example.local:1883";
+        return;
+      }
+      const hostResult = await runCommand("set mqtt.custom2.host " + parsed.host);
+      if (!hostResult.ok) return;
+      const portResult = await runCommand("set mqtt.custom2.port " + parsed.port);
       if (!portResult.ok) return;
       input.value = `${parsed.host}:${parsed.port}`;
     }
@@ -2963,6 +3042,172 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
         setRadioPresetStatus(error && error.message ? error.message : "Unable to load community presets.", true);
       }
     }
+    async function refreshCustomCaCertStatus() {
+      const statusEl = document.getElementById("mqttCustomCaStatus");
+      const deleteBtn = document.getElementById("mqttCustomCaDeleteBtn");
+      if (!statusEl || !deleteBtn) return;
+      try {
+        const res = await fetch("/api/mqtt-ca", {
+          method: "GET",
+          headers: { "X-Auth-Token": token }
+        });
+        if (res.status === 200) {
+          const text = await res.text();
+          if (text.trim().length > 0) {
+            statusEl.textContent = "Certificate uploaded";
+            statusEl.style.color = "#2ecc71";
+            deleteBtn.style.display = "inline-block";
+          } else {
+            statusEl.textContent = "No custom CA certificate";
+            statusEl.style.color = "";
+            deleteBtn.style.display = "none";
+          }
+        } else {
+          statusEl.textContent = "No custom CA certificate";
+          statusEl.style.color = "";
+          deleteBtn.style.display = "none";
+        }
+      } catch (error) {
+        statusEl.textContent = "Error checking cert";
+        statusEl.style.color = "#e74c3c";
+        deleteBtn.style.display = "none";
+      }
+    }
+    async function uploadCustomCaCert(file) {
+      const statusEl = document.getElementById("mqttCustomCaStatus");
+      if (!statusEl) return;
+      statusEl.textContent = "Uploading...";
+      statusEl.style.color = "";
+      try {
+        const content = await file.text();
+        const res = await fetch("/api/mqtt-ca", {
+          method: "POST",
+          headers: {
+            "X-Auth-Token": token,
+            "Content-Type": "text/plain"
+          },
+          body: content
+        });
+        if (res.ok) {
+          statusEl.textContent = "Upload successful";
+          statusEl.style.color = "#2ecc71";
+          await refreshCustomCaCertStatus();
+        } else {
+          const errText = await res.text();
+          statusEl.textContent = "Upload failed: " + errText;
+          statusEl.style.color = "#e74c3c";
+        }
+      } catch (error) {
+        statusEl.textContent = "Upload failed: " + error.message;
+        statusEl.style.color = "#e74c3c";
+      }
+    }
+    async function deleteCustomCaCert() {
+      if (!confirm("Are you sure you want to delete the custom CA certificate?")) return;
+      const statusEl = document.getElementById("mqttCustomCaStatus");
+      if (!statusEl) return;
+      statusEl.textContent = "Deleting...";
+      statusEl.style.color = "";
+      try {
+        const res = await fetch("/api/mqtt-ca", {
+          method: "DELETE",
+          headers: { "X-Auth-Token": token }
+        });
+        if (res.ok) {
+          await refreshCustomCaCertStatus();
+        } else {
+          const errText = await res.text();
+          statusEl.textContent = "Delete failed: " + errText;
+          statusEl.style.color = "#e74c3c";
+        }
+      } catch (error) {
+        statusEl.textContent = "Delete failed: " + error.message;
+        statusEl.style.color = "#e74c3c";
+      }
+    }
+    async function refreshCustom2CaCertStatus() {
+      const statusEl = document.getElementById("mqttCustom2CaStatus");
+      const deleteBtn = document.getElementById("mqttCustom2CaDeleteBtn");
+      if (!statusEl || !deleteBtn) return;
+      try {
+        const res = await fetch("/api/mqtt-ca2", {
+          method: "GET",
+          headers: { "X-Auth-Token": token }
+        });
+        if (res.status === 200) {
+          const text = await res.text();
+          if (text.trim().length > 0) {
+            statusEl.textContent = "Certificate uploaded";
+            statusEl.style.color = "#2ecc71";
+            deleteBtn.style.display = "inline-block";
+          } else {
+            statusEl.textContent = "No custom CA certificate";
+            statusEl.style.color = "";
+            deleteBtn.style.display = "none";
+          }
+        } else {
+          statusEl.textContent = "No custom CA certificate";
+          statusEl.style.color = "";
+          deleteBtn.style.display = "none";
+        }
+      } catch (error) {
+        statusEl.textContent = "Error checking cert";
+        statusEl.style.color = "#e74c3c";
+        deleteBtn.style.display = "none";
+      }
+    }
+    async function uploadCustom2CaCert(file) {
+      const statusEl = document.getElementById("mqttCustom2CaStatus");
+      if (!statusEl) return;
+      statusEl.textContent = "Uploading...";
+      statusEl.style.color = "";
+      try {
+        const content = await file.text();
+        const res = await fetch("/api/mqtt-ca2", {
+          method: "POST",
+          headers: {
+            "X-Auth-Token": token,
+            "Content-Type": "text/plain"
+          },
+          body: content
+        });
+        if (res.ok) {
+          statusEl.textContent = "Upload successful";
+          statusEl.style.color = "#2ecc71";
+          await refreshCustom2CaCertStatus();
+        } else {
+          const errText = await res.text();
+          statusEl.textContent = "Upload failed: " + errText;
+          statusEl.style.color = "#e74c3c";
+        }
+      } catch (error) {
+        statusEl.textContent = "Upload failed: " + error.message;
+        statusEl.style.color = "#e74c3c";
+      }
+    }
+    async function deleteCustom2CaCert() {
+      if (!confirm("Are you sure you want to delete the MQTT 2 CA certificate?")) return;
+      const statusEl = document.getElementById("mqttCustom2CaStatus");
+      if (!statusEl) return;
+      statusEl.textContent = "Deleting...";
+      statusEl.style.color = "";
+      try {
+        const res = await fetch("/api/mqtt-ca2", {
+          method: "DELETE",
+          headers: { "X-Auth-Token": token }
+        });
+        if (res.ok) {
+          await refreshCustom2CaCertStatus();
+        } else {
+          const errText = await res.text();
+          statusEl.textContent = "Delete failed: " + errText;
+          statusEl.style.color = "#e74c3c";
+        }
+      } catch (error) {
+        statusEl.textContent = "Delete failed: " + error.message;
+        statusEl.style.color = "#e74c3c";
+      }
+    }
     function nextPageLoadGeneration() {
       pageLoadGeneration++;
       return pageLoadGeneration;
@@ -3037,45 +3282,49 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
 	    if (mqttIataSelect) {
 	      mqttIataSelect.addEventListener("change", refreshMqttIataWarning);
 	    }
-	    buildRegionStateOptions();
-	    document.getElementById("saveRegionBtn").onclick = () => saveRegionSelection();
-    buildBrokerSlotOptions();
-    async function applyBrokerSlots() {
-      const desired = MQTT_SLOT_IDS.map((id) => {
-        const sel = document.getElementById(id);
-        return sel ? sel.value : "";
-      });
-      if (desired[0] && desired[0] === desired[1]) {
-        refreshBrokerSlotsFromState();
-        return;
-      }
-      const desiredKeys = desired.filter((value) => value);
-      const current = enabledBrokerKeys();
-      const toDisable = current.filter((key) => !desiredKeys.includes(key));
-      const toEnable = desiredKeys.filter((key) => !current.includes(key));
-      // Disable removed brokers first so we never exceed the firmware's two-broker limit mid-swap.
-      for (const key of toDisable) {
-        const broker = brokerByKey(key);
-        const result = await runCommand(broker.set + " off");
-        if (!result.ok) { refreshBrokerSlotsFromState(); return; }
-        const input = document.getElementById(broker.input);
-        if (input) input.checked = false;
-      }
-      for (const key of toEnable) {
-        const broker = brokerByKey(key);
-        const result = await runCommand(broker.set + " on");
-        if (!result.ok) { refreshBrokerSlotsFromState(); return; }
-        const input = document.getElementById(broker.input);
-        if (input) input.checked = true;
-      }
-      refreshBrokerSlotsFromState();
+    buildRegionStateOptions();
+    document.getElementById("saveRegionBtn").onclick = () => saveRegionSelection();
+    // MQTT 1 enable toggle
+    const mqtt1Chk = document.getElementById("mqtt1Enabled");
+    if (mqtt1Chk) {
+      mqtt1Chk.addEventListener("change", () => setMqtt1Enabled(mqtt1Chk.checked));
     }
-    MQTT_SLOT_IDS.forEach((slotId) => {
-      const select = document.getElementById(slotId);
-      if (select) {
-        select.addEventListener("change", () => applyBrokerSlots());
-      }
-    });
+    // MQTT 2 enable toggle
+    const mqtt2Chk = document.getElementById("mqtt2Enabled");
+    if (mqtt2Chk) {
+      mqtt2Chk.addEventListener("change", () => setMqtt2Enabled(mqtt2Chk.checked));
+    }
+    // MQTT 1 CA cert
+	    const fileInput = document.getElementById("mqttCustomCaFile");
+	    const uploadBtn = document.getElementById("mqttCustomCaUploadBtn");
+	    const deleteBtn = document.getElementById("mqttCustomCaDeleteBtn");
+	    if (uploadBtn && fileInput) {
+	      uploadBtn.onclick = () => fileInput.click();
+	      fileInput.onchange = () => {
+	        if (fileInput.files.length > 0) {
+	          uploadCustomCaCert(fileInput.files[0]);
+	        }
+	      };
+	    }
+	    if (deleteBtn) {
+	      deleteBtn.onclick = () => deleteCustomCaCert();
+	    }
+    // MQTT 2 CA cert
+	    const fileInput2 = document.getElementById("mqttCustom2CaFile");
+	    const uploadBtn2 = document.getElementById("mqttCustom2CaUploadBtn");
+	    const deleteBtn2 = document.getElementById("mqttCustom2CaDeleteBtn");
+	    if (uploadBtn2 && fileInput2) {
+	      uploadBtn2.onclick = () => fileInput2.click();
+	      fileInput2.onchange = () => {
+	        if (fileInput2.files.length > 0) {
+	          uploadCustom2CaCert(fileInput2.files[0]);
+	        }
+	      };
+	    }
+	    if (deleteBtn2) {
+	      deleteBtn2.onclick = () => deleteCustom2CaCert();
+	    }
+    // MQTT 1 endpoint, transport, TLS
 	    document.getElementById("refreshCustomEndpointBtn").onclick = () => loadCustomEndpoint();
 	    document.getElementById("saveCustomEndpointBtn").onclick = () => saveCustomEndpoint();
 	    const refreshBridgePeerEndpointBtn = document.getElementById("refreshBridgePeerEndpointBtn");
@@ -3096,6 +3345,39 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
 	        setCustomTransport((Number.parseInt(customTransportSlider.value, 10) || 0) >= 1 ? "wss" : "tcp");
 	      });
 	    }
+	    const customTlsSlider = document.getElementById("mqttCustomTls");
+	    if (customTlsSlider) {
+	      customTlsSlider.addEventListener("input", () => {
+	        customTlsSlider.value = (Number.parseInt(customTlsSlider.value, 10) || 0) >= 1 ? "1" : "0";
+	        refreshCustomTlsUi(customTlsSlider.value === "1" ? "on" : "off");
+	      });
+	      customTlsSlider.addEventListener("change", () => {
+	        setCustomTls((Number.parseInt(customTlsSlider.value, 10) || 0) >= 1 ? "on" : "off");
+	      });
+	    }
+    // MQTT 2 endpoint, transport, TLS
+    document.getElementById("refreshCustom2EndpointBtn").onclick = () => loadCustom2Endpoint();
+    document.getElementById("saveCustom2EndpointBtn").onclick = () => saveCustom2Endpoint();
+    const custom2TransportSlider = document.getElementById("mqttCustom2Transport");
+    if (custom2TransportSlider) {
+      custom2TransportSlider.addEventListener("input", () => {
+        custom2TransportSlider.value = (Number.parseInt(custom2TransportSlider.value, 10) || 0) >= 1 ? "1" : "0";
+        refreshCustom2TransportUi(custom2TransportSlider.value === "1" ? "wss" : "tcp");
+      });
+      custom2TransportSlider.addEventListener("change", () => {
+        setCustom2Transport((Number.parseInt(custom2TransportSlider.value, 10) || 0) >= 1 ? "wss" : "tcp");
+      });
+    }
+    const custom2TlsSlider = document.getElementById("mqttCustom2Tls");
+    if (custom2TlsSlider) {
+      custom2TlsSlider.addEventListener("input", () => {
+        custom2TlsSlider.value = (Number.parseInt(custom2TlsSlider.value, 10) || 0) >= 1 ? "1" : "0";
+        refreshCustom2TlsUi(custom2TlsSlider.value === "1" ? "on" : "off");
+      });
+      custom2TlsSlider.addEventListener("change", () => {
+        setCustom2Tls((Number.parseInt(custom2TlsSlider.value, 10) || 0) >= 1 ? "on" : "off");
+      });
+    }
 	    document.getElementById("saveOwnerInfo").onclick = () => {
 	      const value = document.getElementById("ownerInfo").value.replace(/\n/g, "|");
 	      runCommand("set owner.info " + value);
@@ -3261,15 +3543,18 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
           () => loadField("get mqtt.iata", "mqttIata", null, quiet),
           () => loadField("get mqtt.owner", "mqttOwner", null, quiet),
           () => loadField("get mqtt.email", "mqttEmail", null, quiet),
-          () => loadBrokerState("get mqtt.eastmesh-au", "mqttEastmeshAu", quiet),
-          () => loadBrokerState("get mqtt.meshmapper", "mqttMeshmapper", quiet),
-          () => loadBrokerState("get mqtt.waev", "mqttWaev", quiet),
-          () => loadBrokerState("get mqtt.letsmesh-eu", "mqttLetsmeshEu", quiet),
-          () => loadBrokerState("get mqtt.letsmesh-us", "mqttLetsmeshUs", quiet),
-          () => loadBrokerState("get mqtt.custom", "mqttCustom", quiet),
+          () => loadMqtt1State(quiet),
           () => loadCustomEndpoint(quiet),
           () => loadCustomTransport(quiet),
+          () => loadCustomTls(quiet),
           () => loadField("get mqtt.custom.username", "mqttCustomUsername", null, quiet),
+          () => refreshCustomCaCertStatus(),
+          () => loadMqtt2State(quiet),
+          () => loadCustom2Endpoint(quiet),
+          () => loadCustom2Transport(quiet),
+          () => loadCustom2Tls(quiet),
+          () => loadField("get mqtt.custom2.username", "mqttCustom2Username", null, quiet),
+          () => refreshCustom2CaCertStatus(),
           () => loadBridgePeerEndpoint(quiet)
         ]);
         if (!isCurrentPageLoad(generation)) return;
@@ -3282,7 +3567,6 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
       }
       if (isCurrentPageLoad(generation)) loadRadioPresets();
 	    }
-	    refreshBrokerSlotsFromState();
 	    navigateToPage(isStatsPage ? "/stats" : "/app", { replace:true });
   </script>
 </body>
@@ -3292,7 +3576,7 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
 }  // namespace
 
 WebPanelServer::WebPanelServer()
-    : _runner(nullptr), _server(nullptr), _redirect_server(nullptr), _token{0}, _last_activity_ms(0), _route_context{this} {
+    : _fs(nullptr), _runner(nullptr), _server(nullptr), _redirect_server(nullptr), _token{0}, _last_activity_ms(0), _route_context{this} {
 }
 
 void WebPanelServer::setCommandRunner(WebPanelCommandRunner* runner) {
@@ -3308,7 +3592,7 @@ bool WebPanelServer::start() {
 
   httpd_ssl_config_t config = HTTPD_SSL_CONFIG_DEFAULT();
   config.httpd.max_open_sockets = 2;
-  config.httpd.max_uri_handlers = 9;
+  config.httpd.max_uri_handlers = 18;
   config.httpd.max_resp_headers = 4;
   config.httpd.backlog_conn = 2;
   config.httpd.recv_wait_timeout = 15;
@@ -3341,6 +3625,12 @@ bool WebPanelServer::start() {
   httpd_uri_t command_uri = {.uri = "/api/command", .method = HTTP_POST, .handler = &WebPanelServer::handleCommand, .user_ctx = &_route_context};
   httpd_uri_t firmware_update_uri = {.uri = "/api/firmware-update", .method = HTTP_POST, .handler = &WebPanelServer::handleFirmwareUpdate, .user_ctx = &_route_context};
   httpd_uri_t stats_uri = {.uri = "/api/stats", .method = HTTP_GET, .handler = &WebPanelServer::handleStats, .user_ctx = &_route_context};
+  httpd_uri_t mqtt_ca_get_uri = {.uri = "/api/mqtt-ca", .method = HTTP_GET, .handler = &WebPanelServer::handleMqttCaGet, .user_ctx = &_route_context};
+  httpd_uri_t mqtt_ca_post_uri = {.uri = "/api/mqtt-ca", .method = HTTP_POST, .handler = &WebPanelServer::handleMqttCaPost, .user_ctx = &_route_context};
+  httpd_uri_t mqtt_ca_delete_uri = {.uri = "/api/mqtt-ca", .method = HTTP_DELETE, .handler = &WebPanelServer::handleMqttCaDelete, .user_ctx = &_route_context};
+  httpd_uri_t mqtt_ca2_get_uri = {.uri = "/api/mqtt-ca2", .method = HTTP_GET, .handler = &WebPanelServer::handleMqttCa2Get, .user_ctx = &_route_context};
+  httpd_uri_t mqtt_ca2_post_uri = {.uri = "/api/mqtt-ca2", .method = HTTP_POST, .handler = &WebPanelServer::handleMqttCa2Post, .user_ctx = &_route_context};
+  httpd_uri_t mqtt_ca2_delete_uri = {.uri = "/api/mqtt-ca2", .method = HTTP_DELETE, .handler = &WebPanelServer::handleMqttCa2Delete, .user_ctx = &_route_context};
   httpd_register_uri_handler(_server, &index_uri);
   httpd_register_uri_handler(_server, &favicon_uri);
   httpd_register_uri_handler(_server, &app_uri);
@@ -3350,6 +3640,12 @@ bool WebPanelServer::start() {
   httpd_register_uri_handler(_server, &command_uri);
   httpd_register_uri_handler(_server, &firmware_update_uri);
   httpd_register_uri_handler(_server, &stats_uri);
+  httpd_register_uri_handler(_server, &mqtt_ca_get_uri);
+  httpd_register_uri_handler(_server, &mqtt_ca_post_uri);
+  httpd_register_uri_handler(_server, &mqtt_ca_delete_uri);
+  httpd_register_uri_handler(_server, &mqtt_ca2_get_uri);
+  httpd_register_uri_handler(_server, &mqtt_ca2_post_uri);
+  httpd_register_uri_handler(_server, &mqtt_ca2_delete_uri);
 
   httpd_config_t redirect_config = HTTPD_DEFAULT_CONFIG();
   redirect_config.server_port = 80;
@@ -3719,10 +4015,246 @@ void WebPanelServer::noteActivity() {
   _last_activity_ms = millis();
 }
 
+esp_err_t WebPanelServer::handleMqttCaGet(httpd_req_t* req) {
+  auto* ctx = static_cast<RouteContext*>(req->user_ctx);
+  if (ctx == nullptr || ctx->self == nullptr || ctx->self->_fs == nullptr) {
+    return httpd_resp_send_500(req);
+  }
+  if (!ctx->self->isAuthorized(req)) {
+    return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Unauthorized");
+  }
+
+  ctx->self->noteActivity();
+
+  httpd_resp_set_type(req, "text/plain; charset=utf-8");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+
+  if (!ctx->self->_fs->exists("/mqtt_ca.pem")) {
+    return httpd_resp_send(req, "", 0);
+  }
+
+  File file = ctx->self->_fs->open("/mqtt_ca.pem", "r");
+  if (!file) {
+    return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Could not open cert");
+  }
+
+
+
+  char chunk[512];
+  while (file.available()) {
+    size_t to_read = file.available() > sizeof(chunk) ? sizeof(chunk) : file.available();
+    size_t read = file.read(reinterpret_cast<uint8_t*>(chunk), to_read);
+    if (read > 0) {
+      if (httpd_resp_send_chunk(req, chunk, read) != ESP_OK) {
+        file.close();
+        httpd_resp_send_chunk(req, nullptr, 0);
+        return ESP_FAIL;
+      }
+    }
+  }
+  file.close();
+  return httpd_resp_send_chunk(req, nullptr, 0);
+}
+
+esp_err_t WebPanelServer::handleMqttCaPost(httpd_req_t* req) {
+  auto* ctx = static_cast<RouteContext*>(req->user_ctx);
+  if (ctx == nullptr || ctx->self == nullptr || ctx->self->_fs == nullptr) {
+    return httpd_resp_send_500(req);
+  }
+  if (!ctx->self->isAuthorized(req)) {
+    return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Unauthorized");
+  }
+  if (req->content_len <= 0) {
+    return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing certificate body");
+  }
+  if (req->content_len > 4096) {
+    return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Certificate too large (max 4KB)");
+  }
+
+#if defined(RP2040_PLATFORM)
+  File file = ctx->self->_fs->open("/mqtt_ca.pem", "w");
+#else
+  File file = ctx->self->_fs->open("/mqtt_ca.pem", "w", true);
+#endif
+  if (!file) {
+    return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Could not open file for writing");
+  }
+
+  uint8_t* chunk = reinterpret_cast<uint8_t*>(allocScratchBuffer(1024));
+  if (chunk == nullptr) {
+    file.close();
+    return httpd_resp_send_500(req);
+  }
+
+  int remaining = req->content_len;
+  bool ok = true;
+  while (remaining > 0) {
+    const int to_read = remaining > 1024 ? 1024 : remaining;
+    const int read = httpd_req_recv(req, reinterpret_cast<char*>(chunk), to_read);
+    if (read <= 0) {
+      ok = false;
+      break;
+    }
+    if (file.write(chunk, read) != static_cast<size_t>(read)) {
+      ok = false;
+      break;
+    }
+    remaining -= read;
+  }
+  freeScratchBuffer(chunk);
+  file.close();
+
+  if (!ok || remaining != 0) {
+    ctx->self->_fs->remove("/mqtt_ca.pem");
+    return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Upload failed");
+  }
+
+  ctx->self->noteActivity();
+  httpd_resp_set_type(req, "text/plain; charset=utf-8");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+  return httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
+}
+
+esp_err_t WebPanelServer::handleMqttCaDelete(httpd_req_t* req) {
+  auto* ctx = static_cast<RouteContext*>(req->user_ctx);
+  if (ctx == nullptr || ctx->self == nullptr || ctx->self->_fs == nullptr) {
+    return httpd_resp_send_500(req);
+  }
+  if (!ctx->self->isAuthorized(req)) {
+    return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Unauthorized");
+  }
+
+  ctx->self->noteActivity();
+  if (ctx->self->_fs->exists("/mqtt_ca.pem")) {
+    ctx->self->_fs->remove("/mqtt_ca.pem");
+  }
+
+  httpd_resp_set_type(req, "text/plain; charset=utf-8");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+  return httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
+}
+
+esp_err_t WebPanelServer::handleMqttCa2Get(httpd_req_t* req) {
+  auto* ctx = static_cast<RouteContext*>(req->user_ctx);
+  if (ctx == nullptr || ctx->self == nullptr || ctx->self->_fs == nullptr) {
+    return httpd_resp_send_500(req);
+  }
+  if (!ctx->self->isAuthorized(req)) {
+    return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Unauthorized");
+  }
+
+  ctx->self->noteActivity();
+
+  httpd_resp_set_type(req, "text/plain; charset=utf-8");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+
+  if (!ctx->self->_fs->exists("/mqtt_ca2.pem")) {
+    return httpd_resp_send(req, "", 0);
+  }
+
+  File file = ctx->self->_fs->open("/mqtt_ca2.pem", "r");
+  if (!file) {
+    return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Could not open cert");
+  }
+
+  char chunk[512];
+  while (file.available()) {
+    size_t to_read = file.available() > sizeof(chunk) ? sizeof(chunk) : file.available();
+    size_t read = file.read(reinterpret_cast<uint8_t*>(chunk), to_read);
+    if (read > 0) {
+      if (httpd_resp_send_chunk(req, chunk, read) != ESP_OK) {
+        file.close();
+        httpd_resp_send_chunk(req, nullptr, 0);
+        return ESP_FAIL;
+      }
+    }
+  }
+  file.close();
+  return httpd_resp_send_chunk(req, nullptr, 0);
+}
+
+esp_err_t WebPanelServer::handleMqttCa2Post(httpd_req_t* req) {
+  auto* ctx = static_cast<RouteContext*>(req->user_ctx);
+  if (ctx == nullptr || ctx->self == nullptr || ctx->self->_fs == nullptr) {
+    return httpd_resp_send_500(req);
+  }
+  if (!ctx->self->isAuthorized(req)) {
+    return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Unauthorized");
+  }
+  if (req->content_len <= 0) {
+    return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Missing certificate body");
+  }
+  if (req->content_len > 4096) {
+    return httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "Certificate too large (max 4KB)");
+  }
+
+#if defined(RP2040_PLATFORM)
+  File file = ctx->self->_fs->open("/mqtt_ca2.pem", "w");
+#else
+  File file = ctx->self->_fs->open("/mqtt_ca2.pem", "w", true);
+#endif
+  if (!file) {
+    return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Could not open file for writing");
+  }
+
+  uint8_t* chunk = reinterpret_cast<uint8_t*>(allocScratchBuffer(1024));
+  if (chunk == nullptr) {
+    file.close();
+    return httpd_resp_send_500(req);
+  }
+
+  int remaining = req->content_len;
+  bool ok = true;
+  while (remaining > 0) {
+    const int to_read = remaining > 1024 ? 1024 : remaining;
+    const int read = httpd_req_recv(req, reinterpret_cast<char*>(chunk), to_read);
+    if (read <= 0) {
+      ok = false;
+      break;
+    }
+    if (file.write(chunk, read) != static_cast<size_t>(read)) {
+      ok = false;
+      break;
+    }
+    remaining -= read;
+  }
+  freeScratchBuffer(chunk);
+  file.close();
+
+  if (!ok || remaining != 0) {
+    ctx->self->_fs->remove("/mqtt_ca2.pem");
+    return httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Upload failed");
+  }
+
+  ctx->self->noteActivity();
+  httpd_resp_set_type(req, "text/plain; charset=utf-8");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+  return httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
+}
+
+esp_err_t WebPanelServer::handleMqttCa2Delete(httpd_req_t* req) {
+  auto* ctx = static_cast<RouteContext*>(req->user_ctx);
+  if (ctx == nullptr || ctx->self == nullptr || ctx->self->_fs == nullptr) {
+    return httpd_resp_send_500(req);
+  }
+  if (!ctx->self->isAuthorized(req)) {
+    return httpd_resp_send_err(req, HTTPD_401_UNAUTHORIZED, "Unauthorized");
+  }
+
+  ctx->self->noteActivity();
+  if (ctx->self->_fs->exists("/mqtt_ca2.pem")) {
+    ctx->self->_fs->remove("/mqtt_ca2.pem");
+  }
+
+  httpd_resp_set_type(req, "text/plain; charset=utf-8");
+  httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+  return httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);
+}
+
 #else
 
 WebPanelServer::WebPanelServer()
-    : _runner(nullptr) {
+    : _fs(nullptr), _runner(nullptr) {
 }
 
 void WebPanelServer::setCommandRunner(WebPanelCommandRunner* runner) {

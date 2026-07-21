@@ -253,8 +253,17 @@ This section includes:
 - `mqtt.iata`: selected from a curated east-coast/south-east list.
 - `mqtt.owner`: owner public key.
 - `mqtt.email`: owner contact email.
-- MQTT brokers: **Primary MQTT** and **Secondary MQTT** dropdowns, each selecting one of `eastmesh-au`, `meshmapper`, `Custom`, the retired `letsmesh-eu`/`letsmesh-us`, or `None`. The two slots enforce the two-broker maximum, and a broker chosen in one slot is disabled in the other.
-- custom MQTT `host:port`, TCP/WSS transport, username, and password fields, shown when `Custom` is selected in either slot.
+- **MQTT 1** and **MQTT 2**: two independent custom MQTT broker panels, each with its own enable toggle. Up to two may be enabled at once.
+
+Each MQTT panel (1 and 2) has:
+
+- `Host:Port` — refresh button to load the stored host and port, Save button to write them
+- `Transport` — TCP or WSS (MQTT over secure WebSockets using the fixed `/mqtt` path and the ESP-IDF x509 root CA bundle)
+- `TLS (SSL/MQTTS)` — Off or On
+- `Username` / `Password` — refresh and save for username; save-only for password
+- `Root CA Certificate (PEM)` — Upload button to upload a custom CA certificate file, shown status, and a Delete button when a certificate is present
+
+MQTT 1 stores its Root CA at `/mqtt_ca.pem`. MQTT 2 stores its Root CA at `/mqtt_ca2.pem`.
 
 `UNSET - To be configured` is the default for new observer installs until a real saved value exists.
 
@@ -263,9 +272,8 @@ Notes:
 - when `mqtt.iata` is `UNSET`, the panel shows a banner at the top reminding you to set it under MQTT Settings
 - while `mqtt.iata` is `UNSET`, enabled MQTT brokers do not attempt to connect
 - the current MQTT server states are loaded when the page opens
-- you can toggle each MQTT server on or off from this panel
+- you can enable or disable each MQTT server independently from its panel toggle
 - custom MQTT uses the configured username and password, not JWT authentication
-- custom MQTT defaults to TCP; choose WSS for MQTT over secure WebSockets using the fixed `/mqtt` websocket path and the ESP-IDF x509 root CA bundle
 - turning off a connected MQTT server publishes retained offline status before the client disconnects
 - changing `mqtt.iata` away from a configured value publishes retained offline status to the old status topic, restarts connected broker clients, and reconnects under the new topic path
 - at most two MQTT brokers can be enabled at once

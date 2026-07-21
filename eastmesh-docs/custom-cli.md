@@ -81,21 +81,35 @@ No-argument `get` commands must be entered exactly as shown.
 - `set mqtt.custom.port <port>`
 - `get mqtt.custom.transport`: shows `tcp` or `wss`.
 - `set mqtt.custom.transport tcp|wss`
+- `get mqtt.custom.tls`: shows `on` or `off`.
+- `set mqtt.custom.tls on|off`
 - `get mqtt.custom.username`
 - `set mqtt.custom.username <username>`
 - `get mqtt.custom.password`: shows `set` when a custom password is configured.
 - `set mqtt.custom.password <password>`
+- `get mqtt.custom2`
+- `set mqtt.custom2 on|off`
+- `get mqtt.custom2.host`
+- `set mqtt.custom2.host <host>`
+- `get mqtt.custom2.port`
+- `set mqtt.custom2.port <port>`
+- `get mqtt.custom2.transport`: shows `tcp` or `wss`.
+- `set mqtt.custom2.transport tcp|wss`
+- `get mqtt.custom2.tls`: shows `on` or `off`.
+- `set mqtt.custom2.tls on|off`
+- `get mqtt.custom2.username`
+- `set mqtt.custom2.username <username>`
+- `get mqtt.custom2.password`: shows `set` when a custom password is configured.
+- `set mqtt.custom2.password <password>`
 
 Notes:
 
 - new observer installs default `mqtt.iata` to `UNSET`
-- a maximum of two MQTT brokers can be enabled at once
-- `meshmapper` is the curated global broker (`wss://mqtt.meshmapper.net:443/mqtt`); like `eastmesh-au` it uses WSS, verified TLS, and MeshCore JWT auth with the broker host as the token audience
-- `waev` is a curated broker (`wss://mqtt.waev.app:443/mqtt`); like `eastmesh-au` it uses WSS, verified TLS, and MeshCore JWT auth with the broker host as the token audience, but enforces a 1-hour auth token lifetime (the firmware mints a shorter-lived token for it automatically)
-- `letsmesh-eu` and `letsmesh-us` are retired (LetsMesh is no longer maintained) and off by default; any saved selections are cleared once on upgrade, though the endpoints stay selectable for legacy use
+- a maximum of two MQTT brokers can be enabled at once; `mqtt.custom` (MQTT 1) and `mqtt.custom2` (MQTT 2)
 - if `mqtt.iata` is `UNSET`, enabled MQTT brokers will not connect
 - custom MQTT uses the configured username and password, not JWT authentication
-- custom MQTT defaults to TCP; set `mqtt.custom.transport wss` for MQTT over secure WebSockets using the fixed `/mqtt` websocket path and the ESP-IDF x509 root CA bundle
+- custom MQTT defaults to TCP; set `mqtt.custom.transport wss` (or `mqtt.custom2.transport wss`) for MQTT over secure WebSockets using the fixed `/mqtt` websocket path and the ESP-IDF x509 root CA bundle
+- Root CA certificate for MQTT 1 is stored at `/mqtt_ca.pem`; Root CA certificate for MQTT 2 is stored at `/mqtt_ca2.pem`
 - `get mqtt.status` reports the two enabled broker slots as `p:<broker>:<state>` (primary) and `s:<broker>:<state>` (secondary), or `-` when a slot is empty; custom appears as `custom:<transport>:<state>` (for example `p:custom:wss:up`); `conn` means connecting and `up` means connected
 - custom MQTT uses the same `meshcore/<IATA>/<device>/<leaf>` topics as the curated brokers
 - turning off a connected broker publishes a retained MQTT status update with `"status":"offline"` before the client disconnects

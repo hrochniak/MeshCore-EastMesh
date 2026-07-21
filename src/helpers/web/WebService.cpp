@@ -11,6 +11,7 @@ WebService::WebService() : _fs(nullptr), _prefs{}, _runner(nullptr), _network(nu
 void WebService::begin(FILESYSTEM* fs) {
   _fs = fs;
   WebPrefsStore::load(_fs, _prefs);
+  _panel.setFilesystem(_fs);
 }
 
 void WebService::end() {

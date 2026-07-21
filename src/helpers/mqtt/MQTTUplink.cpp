@@ -128,21 +128,18 @@ void logMqttMemorySnapshot(const char*, const char* = nullptr) {
 }
 
 const MQTTUplink::BrokerSpec MQTTUplink::kBrokerSpecs[kBrokerCount] = {
-    {"eastmesh-au", "eastmesh-au", "mqtt2.eastmesh.au", "wss://mqtt2.eastmesh.au:443/mqtt", kEastmeshBit, false, 0},
-    {"meshmapper", "meshmapper", "mqtt.meshmapper.net", "wss://mqtt.meshmapper.net:443/mqtt", kMeshmapperBit, false, 0},
-    // waev enforces a shorter max token lifetime than the curated default; match its documented config.
-    {"waev", "waev", "mqtt.waev.app", "wss://mqtt.waev.app:443/mqtt", kWaevBit, false, 3600},
-    // Retired: LetsMesh is no longer maintained. Kept selectable for legacy nodes; new nodes should use meshmapper.
-    {"letsmesh-eu", "letsmesh-eu", "mqtt-eu-v1.letsmesh.net", "wss://mqtt-eu-v1.letsmesh.net:443/mqtt",
-     kLetsmeshEuBit, false, 0},
-    {"letsmesh-us", "letsmesh-us", "mqtt-us-v1.letsmesh.net", "wss://mqtt-us-v1.letsmesh.net:443/mqtt",
-     kLetsmeshUsBit, false, 0},
     {"custom", "custom", nullptr, nullptr, kCustomBit, true, 0},
+    {"custom2", "custom2", nullptr, nullptr, kCustom2Bit, true, 0},
+    {"eastmesh-au", "eastmesh-au", nullptr, nullptr, 0, false, 0},
+    {"meshmapper", "meshmapper", nullptr, nullptr, 0, false, 0},
+    {"waev", "waev", nullptr, nullptr, 0, false, 0},
+    {"letsmesh-us", "letsmesh-us", nullptr, nullptr, 0, false, 0},
 };
 
 MQTTUplink::MQTTUplink(mesh::RTCClock& rtc, mesh::LocalIdentity& identity)
     : _fs(nullptr), _rtc(&rtc), _identity(&identity), _running(false), _last_status_publish(0),
-      _token_refresh_count(0), _token_refresh_active_until_ms(0), _last_status{}, _node_name(nullptr), _network(nullptr)
+      _token_refresh_count(0), _token_refresh_active_until_ms(0), _last_status{}, _node_name(nullptr), _network(nullptr),
+      _publish_queue(nullptr)
        {
   memset(_device_id, 0, sizeof(_device_id));
   MQTTPrefsStore::setDefaults(_prefs);
@@ -212,11 +209,20 @@ const char* MQTTUplink::brokerHost(const BrokerState& broker) const {
   if (broker.spec == nullptr) {
     return "";
   }
-  return broker.spec->custom ? _prefs.custom_host : broker.spec->host;
+  if (broker.spec->custom) {
+    if (broker.spec->bit == kCustom2Bit) {
+      return _prefs.custom2_host;
+    }
+    return _prefs.custom_host;
+  }
+  return broker.spec->host;
 }
 
 uint16_t MQTTUplink::brokerPort(const BrokerState& broker) const {
   if (broker.spec != nullptr && broker.spec->custom) {
+    if (broker.spec->bit == kCustom2Bit) {
+      return _prefs.custom2_port != 0 ? _prefs.custom2_port : 1883;
+    }
     return _prefs.custom_port != 0 ? _prefs.custom_port : 1883;
   }
   return 443;
@@ -226,7 +232,13 @@ bool MQTTUplink::brokerUsesWss(const BrokerState& broker) const {
   if (broker.spec == nullptr) {
     return false;
   }
-  return !broker.spec->custom || _prefs.custom_transport == 1;
+  if (broker.spec->custom) {
+    if (broker.spec->bit == kCustom2Bit) {
+      return _prefs.custom2_transport == 1;
+    }
+    return _prefs.custom_transport == 1;
+  }
+  return true;
 }
 
 const char* MQTTUplink::brokerUri(BrokerState& broker) const {
@@ -252,6 +264,9 @@ bool MQTTUplink::isBrokerConfigured(const BrokerState& broker) const {
   }
   if (!broker.spec->custom) {
     return true;
+  }
+  if (broker.spec->bit == kCustom2Bit) {
+    return _prefs.custom2_host[0] != 0 && _prefs.custom2_username[0] != 0 && _prefs.custom2_password[0] != 0;
   }
   return _prefs.custom_host[0] != 0 && _prefs.custom_username[0] != 0 && _prefs.custom_password[0] != 0;
 }
@@ -526,7 +541,11 @@ void MQTTUplink::refreshBrokerIdentity(BrokerState& broker) {
     return;
   }
   if (broker.spec->custom) {
-    StrHelper::strncpy(broker.username, _prefs.custom_username, sizeof(broker.username));
+    if (broker.spec->bit == kCustom2Bit) {
+      StrHelper::strncpy(broker.username, _prefs.custom2_username, sizeof(broker.username));
+    } else {
+      StrHelper::strncpy(broker.username, _prefs.custom_username, sizeof(broker.username));
+    }
   } else {
     snprintf(broker.username, sizeof(broker.username), "v1_%s", _device_id);
   }
@@ -628,6 +647,8 @@ void MQTTUplink::destroyBroker(BrokerState& broker, bool reset_retry_state) {
   }
   freeScratchBuffer(broker.token);
   broker.token = nullptr;
+  freeScratchBuffer(broker.custom_ca_cert);
+  broker.custom_ca_cert = nullptr;
   broker.connected = false;
   broker.started = false;
   broker.connect_announced = false;
@@ -967,14 +988,47 @@ void MQTTUplink::ensureBroker(BrokerState& broker, bool allow_new_connect) {
   }
 
   refreshBrokerState(broker);
-  const char* uri = brokerUsesWss(broker) ? brokerUri(broker) : nullptr;
+  char custom_uri_buf[128];
+  memset(custom_uri_buf, 0, sizeof(custom_uri_buf));
+  const char* uri = nullptr;
+  if (broker.spec->custom) {
+    const char* scheme = "mqtt";
+    bool tls_enabled = (broker.spec->bit == kCustom2Bit) ? (_prefs.custom2_tls == 1) : (_prefs.custom_tls == 1);
+    if (brokerUsesWss(broker)) {
+      scheme = "wss";
+    } else if (tls_enabled) {
+      scheme = "mqtts";
+    }
+    snprintf(custom_uri_buf, sizeof(custom_uri_buf), "%s://%s:%u%s",
+             scheme, brokerHost(broker), static_cast<unsigned>(brokerPort(broker)),
+             brokerUsesWss(broker) ? "/mqtt" : "");
+    uri = custom_uri_buf;
+  } else {
+    uri = brokerUri(broker);
+  }
   MQTT_LOG("%s mqtt init host=%s port=%u transport=%s path=%s uri=%s client_id=%s", broker.spec->label, brokerHost(broker),
            static_cast<unsigned>(brokerPort(broker)), brokerUsesWss(broker) ? "wss" : "tcp",
            brokerUsesWss(broker) ? "/mqtt" : "-", uri != nullptr ? uri : "-", broker.client_id);
   logMqttMemorySnapshot("init-pre", broker.spec->label);
+  const char* ca_path = (broker.spec->bit == kCustom2Bit) ? "/mqtt_ca2.pem" : "/mqtt_ca.pem";
+  if (broker.spec->custom && broker.custom_ca_cert == nullptr && _fs != nullptr && _fs->exists(ca_path)) {
+    File file = _fs->open(ca_path, "r");
+    if (file) {
+      size_t size = file.size();
+      if (size > 0 && size < 4096) {
+        broker.custom_ca_cert = allocScratchBuffer(size + 1);
+        if (broker.custom_ca_cert != nullptr) {
+          size_t read_bytes = file.read(reinterpret_cast<uint8_t*>(broker.custom_ca_cert), size);
+          broker.custom_ca_cert[read_bytes] = '\0';
+        }
+      }
+      file.close();
+    }
+  }
+
   esp_mqtt_client_config_t cfg = {};
 #if ESP_IDF_VERSION_MAJOR >= 5
-  if (brokerUsesWss(broker)) {
+  if (uri != nullptr) {
     cfg.broker.address.uri = uri;
   } else {
     cfg.broker.address.hostname = brokerHost(broker);
@@ -982,11 +1036,15 @@ void MQTTUplink::ensureBroker(BrokerState& broker, bool allow_new_connect) {
     cfg.broker.address.transport = MQTT_TRANSPORT_OVER_TCP;
   }
   if (broker.spec->custom) {
-    cfg.credentials.authentication.password = _prefs.custom_password;
-    if (brokerUsesWss(broker)) {
+    cfg.credentials.authentication.password = (broker.spec->bit == kCustom2Bit) ? _prefs.custom2_password : _prefs.custom_password;
+    bool tls_enabled = (broker.spec->bit == kCustom2Bit) ? (_prefs.custom2_tls == 1) : (_prefs.custom_tls == 1);
+    if (brokerUsesWss(broker) || tls_enabled) {
 #if defined(MQTT_USE_CRT_BUNDLE)
       cfg.broker.verification.crt_bundle_attach = MQTT_CRT_BUNDLE_ATTACH;
 #endif
+    }
+    if (broker.custom_ca_cert != nullptr) {
+      cfg.broker.verification.certificate = broker.custom_ca_cert;
     }
   } else {
 #if defined(MQTT_USE_CRT_BUNDLE)
@@ -1009,7 +1067,7 @@ void MQTTUplink::ensureBroker(BrokerState& broker, bool allow_new_connect) {
   cfg.buffer.size = 768;
   cfg.buffer.out_size = 1280;
 #else
-  if (brokerUsesWss(broker)) {
+  if (uri != nullptr) {
     cfg.uri = uri;
   } else {
     cfg.host = brokerHost(broker);
@@ -1017,7 +1075,7 @@ void MQTTUplink::ensureBroker(BrokerState& broker, bool allow_new_connect) {
     cfg.transport = MQTT_TRANSPORT_OVER_TCP;
   }
   cfg.username = broker.username;
-  cfg.password = broker.spec->custom ? _prefs.custom_password : broker.token;
+  cfg.password = broker.spec->custom ? ((broker.spec->bit == kCustom2Bit) ? _prefs.custom2_password : _prefs.custom_password) : broker.token;
   cfg.client_id = broker.client_id;
   cfg.keepalive = 30;
   cfg.buffer_size = 768;
@@ -1025,12 +1083,17 @@ void MQTTUplink::ensureBroker(BrokerState& broker, bool allow_new_connect) {
   cfg.reconnect_timeout_ms = 10000;
   cfg.network_timeout_ms = 10000;
   cfg.disable_auto_reconnect = true;
-  if (broker.spec->custom && brokerUsesWss(broker)) {
+  bool legacy_tls_enabled = broker.spec->custom ? ((broker.spec->bit == kCustom2Bit) ? (_prefs.custom2_tls == 1) : (_prefs.custom_tls == 1)) : false;
+  if (broker.spec->custom && (brokerUsesWss(broker) || legacy_tls_enabled)) {
 #if defined(MQTT_USE_CRT_BUNDLE)
     cfg.crt_bundle_attach = MQTT_CRT_BUNDLE_ATTACH;
 #endif
   }
-  if (!broker.spec->custom) {
+  if (broker.spec->custom) {
+    if (broker.custom_ca_cert != nullptr) {
+      cfg.cert_pem = broker.custom_ca_cert;
+    }
+  } else {
 #if defined(MQTT_USE_CRT_BUNDLE)
     cfg.crt_bundle_attach = MQTT_CRT_BUNDLE_ATTACH;
 #else
@@ -1047,6 +1110,10 @@ void MQTTUplink::ensureBroker(BrokerState& broker, bool allow_new_connect) {
   if (broker.client == nullptr) {
     MQTT_LOG("%s mqtt init failed", broker.spec->label);
     logMqttMemorySnapshot("init-failed", broker.spec->label);
+    freeScratchBuffer(broker.custom_ca_cert);
+    broker.custom_ca_cert = nullptr;
+    broker.reconnect_pending = true;
+    broker.next_connect_attempt = now_ms + kBrokerRetryBaseMillis;
     return;
   }
   logMqttMemorySnapshot("init-post", broker.spec->label);
@@ -1074,6 +1141,7 @@ void MQTTUplink::begin(FILESYSTEM* fs) {
     savePrefs();
   }
   refreshIdentityStrings();
+  _publish_queue = xQueueCreate(8, sizeof(QueuedMqttPacket));
   _running = true;
   _last_status_publish = millis();
   MQTT_LOG("begin iata=%s enabled_mask=0x%02X", _prefs.iata, _prefs.enabled_mask);
@@ -1085,12 +1153,23 @@ void MQTTUplink::end() {
   for (BrokerState& broker : _brokers) {
     destroyBroker(broker);
   }
+  if (_publish_queue != nullptr) {
+    vQueueDelete(_publish_queue);
+    _publish_queue = nullptr;
+  }
   _running = false;
 }
 
 void MQTTUplink::loop(const MQTTStatusSnapshot& snapshot) {
   if (!_running) {
     return;
+  }
+
+  if (_publish_queue != nullptr) {
+    QueuedMqttPacket qp;
+    while (xQueueReceive(_publish_queue, &qp, 0) == pdTRUE) {
+      performPublishPacket(qp.packet, qp.is_tx, qp.rssi, qp.snr, qp.score, qp.duration);
+    }
   }
 
   _last_status = snapshot;
@@ -1127,6 +1206,23 @@ void MQTTUplink::loop(const MQTTStatusSnapshot& snapshot) {
 }
 
 void MQTTUplink::publishPacket(const mesh::Packet& packet, bool is_tx, int rssi, float snr, int score, int duration) {
+  if (!_running || _publish_queue == nullptr) {
+    return;
+  }
+  if (is_tx && !_prefs.tx_enabled) {
+    return;
+  }
+  QueuedMqttPacket qp;
+  qp.packet = packet;
+  qp.is_tx = is_tx;
+  qp.rssi = rssi;
+  qp.snr = snr;
+  qp.score = score;
+  qp.duration = duration;
+  xQueueSend(_publish_queue, &qp, 0);
+}
+
+void MQTTUplink::performPublishPacket(const mesh::Packet& packet, bool is_tx, int rssi, float snr, int score, int duration) {
   if (!_running || _network == nullptr || !_network->hasTimeSync() || !_network->isWifiConnected() || !hasEnabledBroker() ||
       !_prefs.packets_enabled) {
     return;
@@ -1483,6 +1579,155 @@ bool MQTTUplink::setCustomPassword(const char* password) {
   return saved;
 }
 
+bool MQTTUplink::setCustomTls(bool enabled) {
+  uint8_t val = enabled ? 1 : 0;
+  if (_prefs.custom_tls == val) {
+    return true;
+  }
+  _prefs.custom_tls = val;
+  bool saved = savePrefs();
+  if (saved) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustomBit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
+bool MQTTUplink::setCustom2Host(const char* host) {
+  if (host == nullptr) {
+    return false;
+  }
+  char cleaned[sizeof(_prefs.custom2_host)];
+  memset(cleaned, 0, sizeof(cleaned));
+  size_t oi = 0;
+  for (size_t i = 0; host[i] != 0 && oi + 1 < sizeof(cleaned); ++i) {
+    unsigned char c = static_cast<unsigned char>(host[i]);
+    if (c <= ' ' || c == '/' || c == ':' || c == '\\') {
+      return false;
+    }
+    cleaned[oi++] = static_cast<char>(c);
+  }
+  cleaned[oi] = 0;
+  bool changed = strcmp(cleaned, _prefs.custom2_host) != 0;
+  StrHelper::strncpy(_prefs.custom2_host, cleaned, sizeof(_prefs.custom2_host));
+  bool saved = savePrefs();
+  if (saved && changed) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustom2Bit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
+bool MQTTUplink::setCustom2Port(const char* port) {
+  if (port == nullptr || port[0] == 0) {
+    return false;
+  }
+  char* end = nullptr;
+  unsigned long parsed = strtoul(port, &end, 10);
+  if (end == port || *end != 0 || parsed == 0 || parsed > 65535UL) {
+    return false;
+  }
+  bool changed = _prefs.custom2_port != static_cast<uint16_t>(parsed);
+  _prefs.custom2_port = static_cast<uint16_t>(parsed);
+  bool saved = savePrefs();
+  if (saved && changed) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustom2Bit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
+const char* MQTTUplink::getCustom2Transport() const {
+  return _prefs.custom2_transport == 1 ? "wss" : "tcp";
+}
+
+bool MQTTUplink::setCustom2Transport(const char* transport) {
+  if (transport == nullptr) {
+    return false;
+  }
+  uint8_t parsed;
+  if (strcasecmp(transport, "tcp") == 0) {
+    parsed = 0;
+  } else if (strcasecmp(transport, "wss") == 0) {
+#if !defined(MQTT_USE_CRT_BUNDLE)
+    return false;
+#endif
+    parsed = 1;
+  } else {
+    return false;
+  }
+  bool changed = _prefs.custom2_transport != parsed;
+  _prefs.custom2_transport = parsed;
+  bool saved = savePrefs();
+  if (saved && changed) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustom2Bit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
+bool MQTTUplink::setCustom2Username(const char* username) {
+  if (username == nullptr) {
+    return false;
+  }
+  StrHelper::strncpy(_prefs.custom2_username, username, sizeof(_prefs.custom2_username));
+  refreshIdentityStrings();
+  bool saved = savePrefs();
+  if (saved) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustom2Bit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
+bool MQTTUplink::setCustom2Password(const char* password) {
+  if (password == nullptr) {
+    return false;
+  }
+  StrHelper::strncpy(_prefs.custom2_password, password, sizeof(_prefs.custom2_password));
+  bool saved = savePrefs();
+  if (saved) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustom2Bit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
+bool MQTTUplink::setCustom2Tls(bool enabled) {
+  uint8_t val = enabled ? 1 : 0;
+  if (_prefs.custom2_tls == val) {
+    return true;
+  }
+  _prefs.custom2_tls = val;
+  bool saved = savePrefs();
+  if (saved) {
+    for (BrokerState& broker : _brokers) {
+      if (broker.spec != nullptr && broker.spec->bit == kCustom2Bit) {
+        destroyBroker(broker);
+      }
+    }
+  }
+  return saved;
+}
+
 bool MQTTUplink::isAnyBrokerConnected() const {
   for (const BrokerState& broker : _brokers) {
     if (broker.spec != nullptr && broker.connected) {
@@ -1543,6 +1788,14 @@ bool MQTTUplink::setCustomHost(const char*) { return false; }
 bool MQTTUplink::setCustomPort(const char*) { return false; }
 bool MQTTUplink::setCustomUsername(const char*) { return false; }
 bool MQTTUplink::setCustomPassword(const char*) { return false; }
+bool MQTTUplink::setCustomTls(bool) { return false; }
+bool MQTTUplink::setCustom2Host(const char*) { return false; }
+bool MQTTUplink::setCustom2Port(const char*) { return false; }
+bool MQTTUplink::setCustom2Username(const char*) { return false; }
+bool MQTTUplink::setCustom2Password(const char*) { return false; }
+bool MQTTUplink::setCustom2Tls(bool) { return false; }
+bool MQTTUplink::setCustom2Transport(const char*) { return false; }
+const char* MQTTUplink::getCustom2Transport() const { return "tcp"; }
 bool MQTTUplink::sendStatusNow() { return false; }
 bool MQTTUplink::isAnyBrokerConnected() const { return false; }
 const char* MQTTUplink::getAggregateBrokerState() const { return "down"; }

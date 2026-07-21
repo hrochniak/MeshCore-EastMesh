@@ -28,6 +28,7 @@ void MQTTPrefsStore::setDefaults(MQTTPrefs& prefs) {
   prefs.legacy_wifi_powersave = 0;
   prefs.status_interval_ms = kFixedStatusIntervalMs;
   prefs.custom_port = 1883;
+  prefs.custom2_port = 1883;
   prefs.brokers_migrated = 1;  // Fresh installs need no LetsMesh retirement migration.
   StrHelper::strncpy(prefs.iata, MQTT_DEFAULT_IATA, sizeof(prefs.iata));
 #ifdef WIFI_SSID
@@ -78,6 +79,12 @@ bool MQTTPrefsStore::load(FILESYSTEM* fs, MQTTPrefs& prefs) {
   }
   if (prefs.custom_transport > 1) {
     prefs.custom_transport = 0;
+  }
+  if (prefs.custom2_port == 0) {
+    prefs.custom2_port = 1883;
+  }
+  if (prefs.custom2_transport > 1) {
+    prefs.custom2_transport = 0;
   }
   prefs.status_interval_ms = kFixedStatusIntervalMs;
   prefs.enabled_mask &= 0x3F;
