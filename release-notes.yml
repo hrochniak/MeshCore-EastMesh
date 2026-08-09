@@ -60,11 +60,20 @@ releases:
     tag: "companion-wifi-v1.17.0"
     date: "2026-08-09"
     previous_version: "1.16.0"
-    summary: "Updates companion WiFi firmware to upstream MeshCore v1.17.0 with the new key-based settings format and interface manager."
+    summary: "Updates companion WiFi firmware to upstream MeshCore v1.17.0 with the new key-based settings format, interface manager, and a recovery access point for fixing Wi-Fi credentials without a serial cable."
     changes:
       - type: changed
         area: upstream
         text: "Updated the companion WiFi firmware base to upstream MeshCore v1.17.0."
+      - type: added
+        area: wifi
+        text: "Added a recovery access point: when the device has no Wi-Fi credentials or cannot connect for 60 seconds, it broadcasts `EastMesh-WiFi` (WPA2 password = the device pin zero-padded to 8 digits) and shuts the AP down automatically once the configured network connects."
+      - type: added
+        area: cli
+        text: "Exposed the rescue CLI over TCP port 23 on the recovery AP (`telnet 192.168.4.1`), so `set wifi.ssid`, `set wifi.pwd`, and `reboot` work without a serial cable."
+      - type: added
+        area: wifi
+        text: "Gave companion WiFi builds the BLE-style device pin rules: displays show a per-session `Pin:NNNNNN` on the home screen, headless devices default to pin `123456` (AP password `00123456`), and `set pin` overrides both persistently."
       - type: changed
         area: prefs
         text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including persisted Wi-Fi credentials, are migrated automatically on first boot."
