@@ -8,11 +8,11 @@
 #define FIRMWARE_VER_CODE 13
 
 #ifndef FIRMWARE_BUILD_DATE
-#define FIRMWARE_BUILD_DATE "6 Jun 2026"
+#define FIRMWARE_BUILD_DATE "9 Aug 2026"
 #endif
 
 #ifndef FIRMWARE_VERSION
-#define FIRMWARE_VERSION "v1.16.0"
+#define FIRMWARE_VERSION "v1.17.0"
 #endif
 
 #if defined(NRF52_PLATFORM) || defined(STM32_PLATFORM)
@@ -25,6 +25,10 @@
 
 #include "DataStore.h"
 #include "NodePrefs.h"
+
+#if defined(ESP32) && defined(WIFI_SSID)
+#include <WiFi.h>
+#endif
 
 #include <RTClib.h>
 #include <helpers/ArduinoHelpers.h>
@@ -98,6 +102,13 @@ public:
   const char* getWifiSSID() const { return _prefs.wifi_ssid; }
   const char* getWifiPassword() const { return _prefs.wifi_pwd; }
   uint8_t getWifiPowerSaveMode() const { return _prefs.wifi_powersave; }
+#if defined(WIFI_SSID)
+  // recovery AP: broadcast our own SSID (with rescue CLI on TCP) while STA can't connect
+  void startRecoveryAP();
+  void stopRecoveryAP();
+  void loopRecoveryAP();
+  bool isRecoveryAPActive() const { return _recovery_ap_active; }
+#endif
 #endif
 
   void loop();
@@ -170,7 +181,11 @@ protected:
   }
 
 public:
-  void savePrefs() { _store->savePrefs(_prefs, sensors.node_lat, sensors.node_lon); }
+  void savePrefs() {
+    _prefs.node_lat = sensors.node_lat;
+    _prefs.node_lon = sensors.node_lon;
+    _store->savePrefs(_prefs);
+  }
 
 #if ENV_INCLUDE_GPS == 1
   void applyGpsPrefs() {
@@ -202,8 +217,12 @@ private:
   }
 
   void checkCLIRescueCmd();
+  void handleRescueCommand(char* command, Stream& out);
   void checkSerialInterface();
   bool isValidClientRepeatFreq(uint32_t f) const;
+#if defined(ESP32)
+  void applyStationMode();
+#endif
 
   // helpers, short-cuts
   void saveChannels() { _store->saveChannels(this); }
@@ -226,6 +245,12 @@ private:
   bool _cli_rescue;
   bool send_unscoped;   // force un-scoped flood (instead of using send_scope)
   char cli_command[80];
+#if defined(ESP32) && defined(WIFI_SSID)
+  bool _recovery_ap_active = false;
+  WiFiServer* _rescue_server = NULL;
+  WiFiClient _rescue_client;
+  char rescue_cmd[80];
+#endif
   uint8_t app_target_ver;
   uint8_t *sign_data;
   uint32_t sign_data_len;
