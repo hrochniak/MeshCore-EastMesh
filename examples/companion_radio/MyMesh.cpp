@@ -1041,6 +1041,24 @@ void MyMesh::begin(bool has_display) {
   } else {
     _active_ble_pin = _prefs.ble_pin;
   }
+#elif defined(ESP32) && defined(WIFI_SSID)
+  // WiFi builds: the pin doubles as the recovery AP password (zero-padded to 8 digits),
+  // mirroring the BLE pin rules: shown on the display when there is one (random per
+  // session), static default 123456 on headless devices, 'set pin' overrides both.
+  if (_prefs.ble_pin == 0) {
+#ifdef DISPLAY_CLASS
+    if (has_display) {
+      StdRNG rng;
+      _active_ble_pin = rng.nextInt(100000, 999999); // random pin each session
+    } else {
+      _active_ble_pin = 123456;
+    }
+#else
+    _active_ble_pin = 123456;
+#endif
+  } else {
+    _active_ble_pin = _prefs.ble_pin;
+  }
 #else
   _active_ble_pin = 0;
 #endif
@@ -2370,8 +2388,8 @@ void MyMesh::startRecoveryAP() {
 
   char ap_pwd[12];
   const char* pwd = NULL;
-  if (_prefs.ble_pin != 0) {   // WPA2 needs >= 8 chars, so zero-pad the pin
-    sprintf(ap_pwd, "%08lu", (unsigned long) _prefs.ble_pin);
+  if (_active_ble_pin != 0) {   // WPA2 needs >= 8 chars, so zero-pad the pin
+    sprintf(ap_pwd, "%08lu", (unsigned long) _active_ble_pin);
     pwd = ap_pwd;
   }
 
