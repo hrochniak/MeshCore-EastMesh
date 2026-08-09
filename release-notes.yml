@@ -354,7 +354,7 @@ releases:
     tag: "observer-eastmesh-v2026.8.0"
     date: "2026-08-09"
     previous_version: "2026.7.0"
-    summary: "Updates Observer firmware to upstream MeshCore v1.17.0 with the new key-based settings format."
+    summary: "Updates Observer firmware to upstream MeshCore v1.17.0 with the new key-based settings format and fixes the web panel becoming unreachable after long uptimes."
     changes:
       - type: changed
         area: upstream
@@ -362,6 +362,9 @@ releases:
       - type: changed
         area: prefs
         text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including EastMesh fan control and bridge peer configuration, are migrated automatically on first boot."
+      - type: fixed
+        area: web
+        text: "Fixed the web panel refusing connections (browser `PR_CONNECT_RESET_ERROR`) after long uptimes by evicting stale keep-alive connections instead of letting vanished clients permanently occupy the connection pool."
     breaking_changes:
       - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
 
@@ -581,7 +584,7 @@ releases:
     tag: "observer-eastmesh-bridge-espnow-v2026.8.0"
     date: "2026-08-09"
     previous_version: "2026.7.0"
-    summary: "Updates Observer ESP-NOW bridge firmware to upstream MeshCore v1.17.0 with the new key-based settings format."
+    summary: "Updates Observer ESP-NOW bridge firmware to upstream MeshCore v1.17.0 with the new key-based settings format and fixes the web panel becoming unreachable after long uptimes."
     changes:
       - type: changed
         area: upstream
@@ -589,5 +592,8 @@ releases:
       - type: changed
         area: prefs
         text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including EastMesh fan control and bridge peer configuration, are migrated automatically on first boot."
+      - type: fixed
+        area: web
+        text: "Fixed the web panel refusing connections (browser `PR_CONNECT_RESET_ERROR`) after long uptimes by evicting stale keep-alive connections instead of letting vanished clients permanently occupy the connection pool."
     breaking_changes:
       - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
