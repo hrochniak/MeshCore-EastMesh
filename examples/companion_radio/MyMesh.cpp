@@ -2103,48 +2103,44 @@ void MyMesh::enterCLIRescue() {
   Serial.println("========= CLI Rescue =========");
 }
 
-void MyMesh::checkCLIRescueCmd() {
-  int len = strlen(cli_command);
-  while (Serial.available() && len < sizeof(cli_command)-1) {
-    char c = Serial.read();
-    if (c != '\n') {
-      cli_command[len++] = c;
-      cli_command[len] = 0;
-    }
-    Serial.print(c);  // echo
-  }
-  if (len == sizeof(cli_command)-1) {  // command buffer full
-    cli_command[sizeof(cli_command)-1] = '\r';
-  }
+#if defined(ESP32)
+void MyMesh::applyStationMode() {
+#if defined(WIFI_SSID)
+  // keep the recovery AP up (AP+STA) so a rescue session isn't dropped mid-config
+  WiFi.mode(_recovery_ap_active ? WIFI_AP_STA : WIFI_STA);
+#else
+  WiFi.mode(WIFI_STA);
+#endif
+}
+#endif
 
-  if (len > 0 && cli_command[len - 1] == '\r') {  // received complete line
-    cli_command[len - 1] = 0;  // replace newline with C string null terminator
+void MyMesh::handleRescueCommand(char* command, Stream& out) {
 
-    if (memcmp(cli_command, "set ", 4) == 0) {
-      const char* config = &cli_command[4];
+    if (memcmp(command, "set ", 4) == 0) {
+      const char* config = &command[4];
       if (memcmp(config, "pin ", 4) == 0) {
         _prefs.ble_pin = atoi(&config[4]);
         savePrefs();
-        Serial.printf("  > pin is now %06d\n", _prefs.ble_pin);
+        out.printf("  > pin is now %06d\n", _prefs.ble_pin);
 #if defined(ESP32)
       } else if (memcmp(config, "wifi.ssid ", 10) == 0) {
         StrHelper::strncpy(_prefs.wifi_ssid, &config[10], sizeof(_prefs.wifi_ssid));
         savePrefs();
         if (_prefs.wifi_ssid[0]) {
-          WiFi.mode(WIFI_STA);
+          applyStationMode();
           WiFi.setSleep(toEspPowerSave(_prefs.wifi_powersave));
           WiFi.begin(_prefs.wifi_ssid, _prefs.wifi_pwd);
         }
-        Serial.printf("  > wifi.ssid is now: %s\n", _prefs.wifi_ssid[0] ? _prefs.wifi_ssid : "-");
+        out.printf("  > wifi.ssid is now: %s\n", _prefs.wifi_ssid[0] ? _prefs.wifi_ssid : "-");
       } else if (memcmp(config, "wifi.pwd ", 9) == 0) {
         StrHelper::strncpy(_prefs.wifi_pwd, &config[9], sizeof(_prefs.wifi_pwd));
         savePrefs();
         if (_prefs.wifi_ssid[0]) {
-          WiFi.mode(WIFI_STA);
+          applyStationMode();
           WiFi.setSleep(toEspPowerSave(_prefs.wifi_powersave));
           WiFi.begin(_prefs.wifi_ssid, _prefs.wifi_pwd);
         }
-        Serial.println("  > wifi.pwd updated");
+        out.println("  > wifi.pwd updated");
       } else if (memcmp(config, "wifi.powersaving ", 17) == 0) {
         uint8_t next_mode = 0xFF;
         if (strcmp(&config[17], "none") == 0) {
@@ -2158,67 +2154,67 @@ void MyMesh::checkCLIRescueCmd() {
           _prefs.wifi_powersave = next_mode;
           savePrefs();
           WiFi.setSleep(toEspPowerSave(_prefs.wifi_powersave));
-          Serial.printf("  > wifi.powersaving is now: %s\n", getPowerSaveLabel(_prefs.wifi_powersave));
+          out.printf("  > wifi.powersaving is now: %s\n", getPowerSaveLabel(_prefs.wifi_powersave));
         } else {
-          Serial.println("  Error: bad wifi.powersaving");
+          out.println("  Error: bad wifi.powersaving");
         }
 #endif
       } else {
-        Serial.printf("  Error: unknown config: %s\n", config);
+        out.printf("  Error: unknown config: %s\n", config);
       }
-    } else if (strcmp(cli_command, "get wifi.ssid") == 0) {
+    } else if (strcmp(command, "get wifi.ssid") == 0) {
 #if defined(ESP32)
-      Serial.printf("  > %s\n", _prefs.wifi_ssid[0] ? _prefs.wifi_ssid : "-");
+      out.printf("  > %s\n", _prefs.wifi_ssid[0] ? _prefs.wifi_ssid : "-");
 #else
-      Serial.println("  Error: wifi unsupported");
+      out.println("  Error: wifi unsupported");
 #endif
-    } else if (strcmp(cli_command, "get wifi.powersaving") == 0) {
+    } else if (strcmp(command, "get wifi.powersaving") == 0) {
 #if defined(ESP32)
-      Serial.printf("  > %s\n", getPowerSaveLabel(_prefs.wifi_powersave));
+      out.printf("  > %s\n", getPowerSaveLabel(_prefs.wifi_powersave));
 #else
-      Serial.println("  Error: wifi unsupported");
+      out.println("  Error: wifi unsupported");
 #endif
-    } else if (strcmp(cli_command, "get wifi.status") == 0) {
+    } else if (strcmp(command, "get wifi.status") == 0) {
 #if defined(ESP32)
       wl_status_t status = WiFi.status();
       if (_prefs.wifi_ssid[0] == 0) {
-        Serial.println("  > ssid:- status:off code:255 state:unconfigured");
+        out.println("  > ssid:- status:off code:255 state:unconfigured");
       } else if (status == WL_CONNECTED) {
         const int rssi_dbm = WiFi.RSSI();
-        Serial.printf("  > ssid:%s status:connected code:%d state:%s ip:%s rssi:%d quality:%d%% signal:%s\n",
+        out.printf("  > ssid:%s status:connected code:%d state:%s ip:%s rssi:%d quality:%d%% signal:%s\n",
                       _prefs.wifi_ssid, static_cast<int>(status), getWifiStateLabel(status),
                       WiFi.localIP().toString().c_str(), rssi_dbm, getWifiQualityPercent(rssi_dbm),
                       getWifiQualityLabel(rssi_dbm));
       } else {
         const char* overall = (status == WL_IDLE_STATUS) ? "connecting" : "disconnected";
-        Serial.printf("  > ssid:%s status:%s code:%d state:%s\n", _prefs.wifi_ssid, overall,
+        out.printf("  > ssid:%s status:%s code:%d state:%s\n", _prefs.wifi_ssid, overall,
                       static_cast<int>(status), getWifiStateLabel(status));
       }
 #else
-      Serial.println("  Error: wifi unsupported");
+      out.println("  Error: wifi unsupported");
 #endif
-    } else if (strcmp(cli_command, "rebuild") == 0) {
+    } else if (strcmp(command, "rebuild") == 0) {
       bool success = _store->formatFileSystem();
       if (success) {
         _store->saveMainIdentity(self_id);
         savePrefs();
         saveContacts();
         saveChannels();
-        Serial.println("  > erase and rebuild done");
+        out.println("  > erase and rebuild done");
       } else {
-        Serial.println("  Error: erase failed");
+        out.println("  Error: erase failed");
       }
-    } else if (strcmp(cli_command, "erase") == 0) {
+    } else if (strcmp(command, "erase") == 0) {
       bool success = _store->formatFileSystem();
       if (success) {
-        Serial.println("  > erase done");
+        out.println("  > erase done");
       } else {
-        Serial.println("  Error: erase failed");
+        out.println("  Error: erase failed");
       }
-    } else if (memcmp(cli_command, "ls", 2) == 0) {
+    } else if (memcmp(command, "ls", 2) == 0) {
 
       // get path from command e.g: "ls /adafruit"
-      const char *path = &cli_command[3];
+      const char *path = &command[3];
 
       bool is_fs2 = false;
       if (memcmp(path, "UserData/", 9) == 0) {
@@ -2227,7 +2223,7 @@ void MyMesh::checkCLIRescueCmd() {
         path += 7; // skip "ExtraFS"
         is_fs2 = true;
       }
-      Serial.printf("Listing files in %s\n", path);
+      out.printf("Listing files in %s\n", path);
 
       // log each file and directory
       File root = _store->openRead(path);
@@ -2236,9 +2232,9 @@ void MyMesh::checkCLIRescueCmd() {
           File file = root.openNextFile();
           while (file) {
             if (file.isDirectory()) {
-              Serial.printf("[dir]  UserData%s/%s\n", path, file.name());
+              out.printf("[dir]  UserData%s/%s\n", path, file.name());
             } else {
-              Serial.printf("[file] UserData%s/%s (%d bytes)\n", path, file.name(), file.size());
+              out.printf("[file] UserData%s/%s (%d bytes)\n", path, file.name(), file.size());
             }
             // move to next file
             file = root.openNextFile();
@@ -2253,9 +2249,9 @@ void MyMesh::checkCLIRescueCmd() {
           File file = root2.openNextFile();
           while (file) {
             if (file.isDirectory()) {
-              Serial.printf("[dir]  ExtraFS%s/%s\n", path, file.name());
+              out.printf("[dir]  ExtraFS%s/%s\n", path, file.name());
             } else {
-              Serial.printf("[file] ExtraFS%s/%s (%d bytes)\n", path, file.name(), file.size());
+              out.printf("[file] ExtraFS%s/%s (%d bytes)\n", path, file.name(), file.size());
             }
             // move to next file
             file = root2.openNextFile();
@@ -2263,10 +2259,10 @@ void MyMesh::checkCLIRescueCmd() {
           root2.close();
         }
       }
-    } else if (memcmp(cli_command, "cat", 3) == 0) {
+    } else if (memcmp(command, "cat", 3) == 0) {
 
       // get path from command e.g: "cat /contacts3"
-      const char *path = &cli_command[4];
+      const char *path = &command[4];
 
       bool is_fs2 = false;
       if (memcmp(path, "UserData/", 9) == 0) {
@@ -2275,8 +2271,7 @@ void MyMesh::checkCLIRescueCmd() {
         path += 7; // skip "ExtraFS"
         is_fs2 = true;
       } else {
-        Serial.println("Invalid path provided, must start with UserData/ or ExtraFS/");
-        cli_command[0] = 0;
+        out.println("Invalid path provided, must start with UserData/ or ExtraFS/");
         return;
       }
 
@@ -2294,19 +2289,19 @@ void MyMesh::checkCLIRescueCmd() {
 
         // print hex
         mesh::Utils::printHex(Serial, buffer, file_size);
-        Serial.print("\n");
+        out.print("\n");
 
         file.close();
 
       }
 
-    } else if (memcmp(cli_command, "rm ", 3) == 0) {
+    } else if (memcmp(command, "rm ", 3) == 0) {
       // get path from command e.g: "rm /adv_blobs"
-      const char *path = &cli_command[3];
+      const char *path = &command[3];
       MESH_DEBUG_PRINTLN("Removing file: %s", path);
       // ensure path is not empty, or root dir
       if(!path || strlen(path) == 0 || strcmp(path, "/") == 0){
-        Serial.println("Invalid path provided");
+        out.println("Invalid path provided");
       } else {
       bool is_fs2 = false;
       if (memcmp(path, "UserData/", 9) == 0) {
@@ -2326,22 +2321,114 @@ void MyMesh::checkCLIRescueCmd() {
           removed = _store->removeFile(path);
         }
         if(removed){
-          Serial.println("File removed");
+          out.println("File removed");
         } else {
-          Serial.println("Failed to remove file");
+          out.println("Failed to remove file");
         }
 
       }
 
-    } else if (strcmp(cli_command, "reboot") == 0) {
+    } else if (strcmp(command, "reboot") == 0) {
       board.reboot();  // doesn't return
     } else {
-      Serial.println("  Error: unknown command");
+      out.println("  Error: unknown command");
     }
 
+}
+
+void MyMesh::checkCLIRescueCmd() {
+  int len = strlen(cli_command);
+  while (Serial.available() && len < sizeof(cli_command)-1) {
+    char c = Serial.read();
+    if (c != '\n') {
+      cli_command[len++] = c;
+      cli_command[len] = 0;
+    }
+    Serial.print(c);  // echo
+  }
+  if (len == sizeof(cli_command)-1) {  // command buffer full
+    cli_command[sizeof(cli_command)-1] = '\r';
+  }
+
+  if (len > 0 && cli_command[len - 1] == '\r') {  // received complete line
+    cli_command[len - 1] = 0;  // replace newline with C string null terminator
+    handleRescueCommand(cli_command, Serial);
     cli_command[0] = 0;  // reset command buffer
   }
 }
+
+#if defined(ESP32) && defined(WIFI_SSID)
+#ifndef RECOVERY_AP_SSID
+  #define RECOVERY_AP_SSID "EastMesh-WiFi"
+#endif
+#ifndef RECOVERY_CLI_PORT
+  #define RECOVERY_CLI_PORT 23
+#endif
+
+void MyMesh::startRecoveryAP() {
+  if (_recovery_ap_active) return;
+
+  char ap_pwd[12];
+  const char* pwd = NULL;
+  if (_prefs.ble_pin != 0) {   // WPA2 needs >= 8 chars, so zero-pad the pin
+    sprintf(ap_pwd, "%08lu", (unsigned long) _prefs.ble_pin);
+    pwd = ap_pwd;
+  }
+
+  WiFi.mode(_prefs.wifi_ssid[0] ? WIFI_AP_STA : WIFI_AP);  // keep trying STA if creds exist
+  WiFi.softAP(RECOVERY_AP_SSID, pwd);
+
+  if (_rescue_server == NULL) {
+    _rescue_server = new WiFiServer(RECOVERY_CLI_PORT);
+  }
+  _rescue_server->begin();
+  rescue_cmd[0] = 0;
+  _recovery_ap_active = true;
+
+  Serial.printf("WiFi: recovery AP '%s' up (%s), rescue CLI on %s:%d\n", RECOVERY_AP_SSID,
+                pwd ? "pwd = pin zero-padded to 8 digits" : "OPEN - use 'set pin' to secure",
+                WiFi.softAPIP().toString().c_str(), RECOVERY_CLI_PORT);
+}
+
+void MyMesh::stopRecoveryAP() {
+  if (!_recovery_ap_active) return;
+  if (_rescue_client) _rescue_client.stop();
+  _rescue_server->stop();
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_STA);
+  _recovery_ap_active = false;
+  Serial.println("WiFi: recovery AP stopped");
+}
+
+void MyMesh::loopRecoveryAP() {
+  if (!_recovery_ap_active) return;
+
+  if (!_rescue_client || !_rescue_client.connected()) {
+    WiFiClient next = _rescue_server->available();
+    if (next) {
+      _rescue_client = next;
+      rescue_cmd[0] = 0;
+      _rescue_client.print("========= CLI Rescue =========\r\n");
+    }
+  }
+  if (_rescue_client && _rescue_client.connected()) {
+    int len = strlen(rescue_cmd);
+    while (_rescue_client.available()) {
+      char c = _rescue_client.read();
+      if (c == '\r' || c == '\n') {
+        if (len > 0) {
+          handleRescueCommand(rescue_cmd, _rescue_client);
+          rescue_cmd[0] = 0;
+          len = 0;
+        }
+      } else if (c >= 32 && c < 127 && len < (int) sizeof(rescue_cmd) - 1) {
+        rescue_cmd[len++] = c;   // printable chars only (filters telnet negotiation bytes)
+        rescue_cmd[len] = 0;
+      }
+    }
+  }
+}
+#endif
 
 void MyMesh::checkSerialInterface() {
   size_t len = _serial->checkRecvFrame(cmd_frame);

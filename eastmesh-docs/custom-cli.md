@@ -260,3 +260,20 @@ Companion Wi-Fi builds also still support the existing rescue commands such as:
 - `cat ...`
 - `rm ...`
 - `reboot`
+
+### Recovery Access Point
+
+When a companion Wi-Fi device has no Wi-Fi credentials configured, or cannot connect
+to its configured network for 60 seconds, it broadcasts its own `EastMesh-WiFi`
+access point so it can be rescued without a serial cable:
+
+- the AP password is the device's 6-digit pin (`set pin ...`) zero-padded to 8 digits,
+  e.g. pin `123456` gives Wi-Fi password `00123456`
+- if no pin has been set, the AP is **open** — set a pin first if the device is in a
+  public area
+- connect to the AP, then open the rescue CLI with `telnet 192.168.4.1` (or
+  `nc 192.168.4.1 23`); all rescue commands above are available
+- typical recovery: `set wifi.ssid <ssid>`, `set wifi.pwd <password>`, `reboot`
+- while the AP is up the device keeps retrying its configured network; as soon as the
+  station connection succeeds the recovery AP shuts down automatically
+- the MeshCore app can also reach the device through the AP on the usual TCP port

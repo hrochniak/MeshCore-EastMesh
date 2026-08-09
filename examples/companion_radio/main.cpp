@@ -111,6 +111,10 @@ void halt() {
 #if defined(ESP32) && defined(WIFI_SSID)
   bool wifi_needs_reconnect = false;
   unsigned long last_wifi_reconnect_attempt = 0;
+  unsigned long last_wifi_connected = 0;
+  #ifndef RECOVERY_AP_TIMEOUT_MS
+    #define RECOVERY_AP_TIMEOUT_MS 60000   // STA not connected this long -> recovery AP
+  #endif
 #endif
 
 void setup() {
@@ -277,6 +281,20 @@ void loop() {
     WiFi.disconnect();
     WiFi.reconnect();
     last_wifi_reconnect_attempt = millis();
+  }
+
+  // Recovery AP: broadcast our own SSID (with the rescue CLI on TCP) when STA has no
+  // credentials or hasn't been able to connect, so wifi.ssid/pwd can be fixed in place
+  if (the_mesh.isRecoveryAPActive()) {
+    the_mesh.loopRecoveryAP();
+    if (WiFi.status() == WL_CONNECTED) {
+      the_mesh.stopRecoveryAP();   // STA is up again; back to normal operation
+    }
+  } else if (WiFi.status() == WL_CONNECTED) {
+    last_wifi_connected = millis();
+  } else if (the_mesh.getWifiSSID()[0] == 0 ||
+             millis() - last_wifi_connected > RECOVERY_AP_TIMEOUT_MS) {
+    the_mesh.startRecoveryAP();
   }
 #endif
 }
