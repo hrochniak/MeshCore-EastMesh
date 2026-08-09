@@ -23,29 +23,39 @@ ColorVal UIColor::corp_blue = SH110X_WHITE;
 bool SH1106Display::begin()
 {
 #if defined(ESP32) && defined(TBEAM_SUPREME_SX1262) && defined(PIN_BOARD_SDA) && defined(PIN_BOARD_SCL)
+  // The S3 Supreme OLED bus NAKs cold address probes on some boards, so run the
+  // Adafruit init (with its reset sequence) first, then settle the bus before
+  // verifying the display responds.
+  _began = display.begin(DISPLAY_ADDRESS, true);
   Wire.begin(PIN_BOARD_SDA, PIN_BOARD_SCL);
   Wire.setClock(100000);
-#endif
+  _began = _began && i2c_probe(Wire, DISPLAY_ADDRESS);
+#else
   // Wire must already be initialised by board.begin() before this is called.
   // Boards with non-standard SH1106 addresses should define DISPLAY_ADDRESS
   // in their variant/platformio configuration.
-  return i2c_probe(Wire, DISPLAY_ADDRESS) && display.begin(DISPLAY_ADDRESS, true);
+  _began = i2c_probe(Wire, DISPLAY_ADDRESS) && display.begin(DISPLAY_ADDRESS, true);
+#endif
+  return _began;
 }
 
 void SH1106Display::turnOn()
 {
+  if (!_began) return;  // display.begin() never ran; oled_command would crash on a null bus device
   display.oled_command(SH110X_DISPLAYON);
   _isOn = true;
 }
 
 void SH1106Display::turnOff()
 {
+  if (!_began) return;
   display.oled_command(SH110X_DISPLAYOFF);
   _isOn = false;
 }
 
 void SH1106Display::clear()
 {
+  if (!_began) return;
   display.clearDisplay();
   display.display();
 }

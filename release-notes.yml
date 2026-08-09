@@ -368,6 +368,21 @@ releases:
     breaking_changes:
       - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
 
+  - track: observer-eastmesh
+    version: "2026.8.1"
+    tag: "observer-eastmesh-v2026.8.1"
+    date: "2026-08-09"
+    previous_version: "2026.8.0"
+    summary: "Hardens T-Beam S3 Supreme display bring-up so a failed boot-time OLED probe can no longer crash-loop the node."
+    changes:
+      - type: fixed
+        area: board
+        text: "Restored the proven T-Beam S3 Supreme SH1106 bring-up order (initialise the display before probing the bus, which can NAK cold probes on this board) so the OLED reliably comes up at boot."
+      - type: fixed
+        area: board
+        text: "Made a failed or absent SH1106 display boot the node headless instead of crash-looping: display operations are now safe no-ops when the boot-time initialisation did not succeed."
+    breaking_changes: []
+
   - track: observer-eastmesh-bridge-espnow
     version: "2026.5.1"
     tag: "observer-eastmesh-bridge-espnow-v2026.5.1"
@@ -597,3 +612,18 @@ releases:
         text: "Fixed the web panel refusing connections (browser `PR_CONNECT_RESET_ERROR`) after long uptimes by evicting stale keep-alive connections instead of letting vanished clients permanently occupy the connection pool."
     breaking_changes:
       - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
+
+  - track: observer-eastmesh-bridge-espnow
+    version: "2026.8.1"
+    tag: "observer-eastmesh-bridge-espnow-v2026.8.1"
+    date: "2026-08-09"
+    previous_version: "2026.8.0"
+    summary: "Hardens T-Beam S3 Supreme display bring-up so a failed boot-time OLED probe can no longer crash-loop the node."
+    changes:
+      - type: fixed
+        area: board
+        text: "Restored the proven T-Beam S3 Supreme SH1106 bring-up order (initialise the display before probing the bus, which can NAK cold probes on this board) so the OLED reliably comes up at boot."
+      - type: fixed
+        area: board
+        text: "Made a failed or absent SH1106 display boot the node headless instead of crash-looping: display operations are now safe no-ops when the boot-time initialisation did not succeed."
+    breaking_changes: []
