@@ -250,6 +250,7 @@ private:
   WiFiServer* _rescue_server = NULL;
   WiFiClient _rescue_client;
   char rescue_cmd[80];
+  unsigned long _next_sta_retry = 0;
 #endif
   uint8_t app_target_ver;
   uint8_t *sign_data;

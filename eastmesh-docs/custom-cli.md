@@ -293,8 +293,27 @@ Recovery steps:
    retries the network with the new credentials
 4. `reboot` (or just wait — see below)
 
-While the AP is up the device keeps retrying its configured network in the
-background; as soon as the station connection succeeds, the recovery AP shuts down
-automatically (this also drops your rescue session — that's the sign it worked).
-The MeshCore app can also reach the device through the AP on the usual companion
-TCP port.
+While the AP is up the device keeps retrying its configured network about once a
+minute (expect a brief AP hiccup at each attempt); as soon as the station
+connection succeeds, the recovery AP shuts down automatically (this also drops
+your rescue session — that's the sign it worked).
+
+### Using the Companion App over the AP (Roaming)
+
+The recovery AP is not just for fixing credentials — the full companion protocol
+is available through it, which makes it a roaming access mode when the device is
+away from its configured network:
+
+1. join `EastMesh-WiFi` with the pin-derived password (see the table above)
+2. in the MeshCore companion app, add/connect a Wi-Fi device with host
+   `192.168.4.1` and port `5000`
+3. use the app normally — messages, contacts, channels all work over the AP
+
+Notes for roaming use:
+
+- run `set pin <pin>` once so the AP password stays fixed across reboots;
+  otherwise devices with a screen pick a new random pin every boot
+- the AP appears about 60 seconds after boot (the device tries its configured
+  network first), and stays up for as long as that network is unreachable
+- back in range of its configured network, the device joins it and shuts the AP
+  down automatically — reconnect the app via the LAN address instead
