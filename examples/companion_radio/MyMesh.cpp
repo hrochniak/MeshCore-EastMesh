@@ -2382,6 +2382,9 @@ void MyMesh::checkCLIRescueCmd() {
 #ifndef RECOVERY_CLI_PORT
   #define RECOVERY_CLI_PORT 23
 #endif
+#ifndef RECOVERY_STA_RETRY_MS
+  #define RECOVERY_STA_RETRY_MS 60000
+#endif
 
 void MyMesh::startRecoveryAP() {
   if (_recovery_ap_active) return;
@@ -2393,7 +2396,14 @@ void MyMesh::startRecoveryAP() {
     pwd = ap_pwd;
   }
 
+  // A continuously scanning/reconnecting STA drags the AP's radio across channels,
+  // so joining clients time out their WPA2 handshake (phones report "wrong password").
+  // Quiesce the STA while the AP is up; loopRecoveryAP() retries it once a minute.
+  WiFi.setAutoReconnect(false);
   WiFi.mode(_prefs.wifi_ssid[0] ? WIFI_AP_STA : WIFI_AP);  // keep trying STA if creds exist
+  if (_prefs.wifi_ssid[0]) {
+    WiFi.disconnect();
+  }
   WiFi.softAP(RECOVERY_AP_SSID, pwd);
 
   if (_rescue_server == NULL) {
@@ -2401,6 +2411,7 @@ void MyMesh::startRecoveryAP() {
   }
   _rescue_server->begin();
   rescue_cmd[0] = 0;
+  _next_sta_retry = millis() + RECOVERY_STA_RETRY_MS;
   _recovery_ap_active = true;
 
   Serial.printf("WiFi: recovery AP '%s' up (%s), rescue CLI on %s:%d\n", RECOVERY_AP_SSID,
@@ -2414,12 +2425,20 @@ void MyMesh::stopRecoveryAP() {
   _rescue_server->stop();
   WiFi.softAPdisconnect(true);
   WiFi.mode(WIFI_STA);
+  WiFi.setAutoReconnect(true);
   _recovery_ap_active = false;
   Serial.println("WiFi: recovery AP stopped");
 }
 
 void MyMesh::loopRecoveryAP() {
   if (!_recovery_ap_active) return;
+
+  // periodic STA retry: brief AP disruption once a minute beats a permanently
+  // unjoinable AP, and lets the node self-recover when its network comes back
+  if (_prefs.wifi_ssid[0] && WiFi.status() != WL_CONNECTED && (long)(millis() - _next_sta_retry) >= 0) {
+    WiFi.begin(_prefs.wifi_ssid, _prefs.wifi_pwd);
+    _next_sta_retry = millis() + RECOVERY_STA_RETRY_MS;
+  }
 
   if (!_rescue_client || !_rescue_client.connected()) {
     WiFiClient next = _rescue_server->available();
