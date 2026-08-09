@@ -73,7 +73,13 @@ releases:
         text: "Exposed the rescue CLI over TCP port 23 on the recovery AP (`telnet 192.168.4.1`), so `set wifi.ssid`, `set wifi.pwd`, and `reboot` work without a serial cable."
       - type: added
         area: wifi
+        text: "The companion app works over the recovery AP too: connect to host `192.168.4.1` port `5000` for full app connectivity while roaming away from the configured network."
+      - type: added
+        area: wifi
         text: "Gave companion WiFi builds the BLE-style device pin rules: displays show a per-session `Pin:NNNNNN` on the home screen, headless devices default to pin `123456` (AP password `00123456`), and `set pin` overrides both persistently."
+      - type: fixed
+        area: wifi
+        text: "Kept the recovery AP joinable by pausing constant station rescans while it is up (they broke joining clients' WPA2 handshakes, which phones report as a wrong password); the configured network is retried once a minute instead."
       - type: changed
         area: prefs
         text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including persisted Wi-Fi credentials, are migrated automatically on first boot."
