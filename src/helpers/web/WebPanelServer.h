@@ -40,7 +40,6 @@ public:
   WebPanelServer();
 
   void setCommandRunner(WebPanelCommandRunner* runner);
-  void setFilesystem(FILESYSTEM* fs) { _fs = fs; }
   bool start();
   void stop(bool clear_session = true);
   void stopRedirectServer();
