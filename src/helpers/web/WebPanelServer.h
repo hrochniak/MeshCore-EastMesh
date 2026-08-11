@@ -40,6 +40,11 @@ public:
   WebPanelServer();
 
   void setCommandRunner(WebPanelCommandRunner* runner);
+#if defined(ESP_PLATFORM) && WITH_WEB_PANEL
+  void setFilesystem(FILESYSTEM* fs) { _fs = fs; }
+#else
+  void setFilesystem(FILESYSTEM* fs) { (void)fs; }
+#endif
   bool start();
   void stop(bool clear_session = true);
   void stopRedirectServer();
