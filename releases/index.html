@@ -1,0 +1,1186 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for the EastMesh layer on top of MeshCore, including WiFi, MQTT, and release workflows">
+      
+      
+      
+        <link rel="canonical" href="https://xjarid.github.io/MeshCore-EastMesh/releases/">
+      
+      
+        <link rel="prev" href="../boards/">
+      
+      
+        <link rel="next" href="../migration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../_assets/xjarid.svg">
+      <meta name="generator" content="zensical-0.0.32">
+    
+    
+      
+        <title>Download And Flash Releases - MeshCore EastMesh Docs</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.53a7feaf.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../_stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#download-and-flash-releases" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="MeshCore EastMesh Docs" class="md-header__button md-logo" aria-label="MeshCore EastMesh Docs" data-md-component="logo">
+      
+  <img src="../_assets/xjarid.svg" alt="MeshCore EastMesh Docs">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MeshCore EastMesh Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Download And Flash Releases
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/xJARiD/MeshCore-EastMesh" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xJARiD/MeshCore-EastMesh
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="MeshCore EastMesh Docs" class="md-nav__button md-logo" aria-label="MeshCore EastMesh Docs" data-md-component="logo">
+      
+  <img src="../_assets/xjarid.svg" alt="MeshCore EastMesh Docs">
+
+    </a>
+    MeshCore EastMesh Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xJARiD/MeshCore-EastMesh" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xJARiD/MeshCore-EastMesh
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../boards/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#start-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start Here
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pick-your-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pick Your Track
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pick-the-right-asset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pick The Right Asset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#which-file-to-flash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which File To Flash
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flashing-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flashing Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-flasher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Flasher
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Flasher">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#open-meshcore-config-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open MeshCore Config Panel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Open MeshCore Config Panel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#repeater-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repeater Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serial-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serial Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-first-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common First Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common First Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#observer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observer-esp-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observer ESP-NOW
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#repeater-esp-now-bridge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repeater ESP-NOW Bridge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-wi-fi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion Wi-Fi
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-panel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Panel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repeater API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#start-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start Here
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pick-your-track" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pick Your Track
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pick-the-right-asset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pick The Right Asset
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#which-file-to-flash" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Which File To Flash
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flashing-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Flashing Flow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-flasher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Flasher
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Recommended Flasher">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#open-meshcore-config-panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open MeshCore Config Panel
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Open MeshCore Config Panel">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#repeater-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repeater Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serial-console" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serial Console
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#common-first-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common First Steps
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common First Steps">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#observer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observer-esp-now" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observer ESP-NOW
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#repeater-esp-now-bridge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repeater ESP-NOW Bridge
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#companion-wi-fi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Companion Wi-Fi
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+    <a href="https://github.com/xJARiD/MeshCore-EastMesh/edit/main/eastmesh-docs/releases.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="download-and-flash-releases">Download And Flash Releases<a class="headerlink" href="#download-and-flash-releases" title="Permanent link">&para;</a></h1>
+<p>EastMesh release assets are published on:</p>
+<ul>
+<li><a href="https://github.com/xJARiD/MeshCore-EastMesh/releases">https://github.com/xJARiD/MeshCore-EastMesh/releases</a></li>
+</ul>
+<h2 id="start-here">Start Here<a class="headerlink" href="#start-here" title="Permanent link">&para;</a></h2>
+<p>If this is your first time flashing EastMesh firmware, the easiest path is:</p>
+<ol>
+<li>Open <a href="https://flasher.eastmesh.au/">https://flasher.eastmesh.au/</a>.</li>
+<li>Select the firmware that matches what the device will do.</li>
+<li>Select the board that matches your exact hardware.</li>
+<li>Select the version. The flasher defaults to the latest available release.</li>
+<li>Select the image type:</li>
+<li><code>Update</code> for a normal firmware update</li>
+<li><code>Full Flash</code> for a clean full-image flash</li>
+<li>Click <code>Flash Firmware</code>.</li>
+<li>After flashing, finish setup with <code>Open MeshCore Config Panel</code> or the <code>Serial Console</code>.</li>
+</ol>
+<p>If you are not sure which track you need, start with <code>companion-wifi</code> for app-connected companion devices or <code>observer-eastmesh</code> for a fixed repeater that should publish to MQTT.</p>
+<h2 id="pick-your-track">Pick Your Track<a class="headerlink" href="#pick-your-track" title="Permanent link">&para;</a></h2>
+<p>EastMesh publishes four release tracks:</p>
+<table>
+<thead>
+<tr>
+<th>Track</th>
+<th>Use it when</th>
+<th>Firmware filename suffix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>companion-wifi</code></td>
+<td>You want a companion device that connects over Wi-Fi instead of BLE or USB.</td>
+<td><code>*_companion_radio_wifi</code></td>
+</tr>
+<tr>
+<td><code>observer-eastmesh</code></td>
+<td>You want a repeater with Wi-Fi and MQTT uplink, usually feeding broker visibility such as EastMesh/CoreScope.</td>
+<td><code>*_repeater_observer</code></td>
+</tr>
+<tr>
+<td><code>repeater-bridge-espnow</code></td>
+<td>You want a local ESP-NOW bridge between nearby repeaters, without MQTT uplink or the EastMesh web panel.</td>
+<td><code>*_repeater_bridge_espnow</code></td>
+</tr>
+<tr>
+<td><code>observer-eastmesh-bridge-espnow</code></td>
+<td>You want one repeater to provide both MQTT uplink and local ESP-NOW bridge duties.</td>
+<td><code>*_repeater_observer_espnow</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Bridge firmware is not a WAN bridge</p>
+<p>ESP-NOW bridge tracks are for bridging two nearby repeaters that operate on different MeshCore radio configs, for example <code>Australia (Narrow)</code> and <code>Australia (Mid)</code>.</p>
+<p>Bridge tracks do not use MQTT uplink brokers to tunnel mesh traffic over the internet, WAN links, or VPNs.</p>
+</div>
+<h2 id="pick-the-right-asset">Pick The Right Asset<a class="headerlink" href="#pick-the-right-asset" title="Permanent link">&para;</a></h2>
+<p>Download the asset that matches your board and firmware type.</p>
+<p>Examples:</p>
+<ul>
+<li><code>heltec_v4_companion_radio_wifi-v1.14.1-abcdef.bin</code></li>
+<li><code>heltec_v4_repeater_observer-v1.15.0-eastmesh-v2026.5.1-abcdef.bin</code></li>
+<li><code>heltec_v4_repeater_observer-v1.15.0-eastmesh-v2026.5.1-abcdef-merged.bin</code></li>
+<li><code>heltec_v4_repeater_bridge_espnow-v1.15.0-abcdef.bin</code></li>
+<li><code>heltec_v4_repeater_observer_espnow-v1.15.0-eastmesh-v2026.5.1-abcdef.bin</code></li>
+</ul>
+<p>The important part is the board/env prefix:</p>
+<ul>
+<li><code>*_companion_radio_wifi</code></li>
+<li><code>*_repeater_observer</code></li>
+<li><code>*_repeater_bridge_espnow</code></li>
+<li><code>*_repeater_observer_espnow</code></li>
+</ul>
+<h2 id="which-file-to-flash">Which File To Flash<a class="headerlink" href="#which-file-to-flash" title="Permanent link">&para;</a></h2>
+<p>If you are using <a href="https://flasher.eastmesh.au/">https://flasher.eastmesh.au/</a>, choose the image type in the flasher:</p>
+<ul>
+<li><code>Update</code> = normal firmware update</li>
+<li><code>Full Flash</code> = clean full-image flash</li>
+</ul>
+<p>If you are manually downloading files from GitHub Releases, use the filename instead:</p>
+<p>Use the standard <code>.bin</code> file when you are updating an existing device with the same target and partition layout.</p>
+<p>Use the <code>-merged.bin</code> file when you want a clean install after erasing flash. This is the full ESP32 image and is intended to be flashed from address <code>0x0</code>.</p>
+<p>Practical rule:</p>
+<ul>
+<li><code>.bin</code> = incremental update</li>
+<li><code>-merged.bin</code> = erase and clean flash</li>
+</ul>
+<h2 id="flashing-flow">Flashing Flow<a class="headerlink" href="#flashing-flow" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Select firmware.</li>
+<li>Select board.</li>
+<li>Select version. The latest version is selected by default.</li>
+<li>Select image type: <code>Update</code> or <code>Full Flash</code>.</li>
+<li>Click <code>Flash Firmware</code>.</li>
+<li>After flashing, use <code>Open MeshCore Config Panel</code> or the <code>Serial Console</code> for post-flash setup such as Wi-Fi, MQTT, bridge, or radio settings.</li>
+</ol>
+<h2 id="recommended-flasher">Recommended Flasher<a class="headerlink" href="#recommended-flasher" title="Permanent link">&para;</a></h2>
+<p>The recommended flasher is:</p>
+<ul>
+<li><a href="https://flasher.eastmesh.au/">https://flasher.eastmesh.au/</a></li>
+</ul>
+<p>It includes native support for the common EastMesh firmware types and can also flash custom firmware files:</p>
+<ul>
+<li><code>companion_radio_wifi</code> firmware</li>
+<li><code>repeater_observer</code> firmware</li>
+<li>custom firmware files</li>
+</ul>
+<p>For bridge releases, use the matching bridge option if the flasher shows one. Otherwise, download the release asset yourself and flash it as a custom firmware file.</p>
+<p>Recommended usage:</p>
+<ul>
+<li>use <code>Update</code> when you are updating an existing device</li>
+<li>use <code>Full Flash</code> when you want a clean full-image flash</li>
+</ul>
+<p>After flashing, there are two useful setup paths in the flasher.</p>
+<h3 id="open-meshcore-config-panel">Open MeshCore Config Panel<a class="headerlink" href="#open-meshcore-config-panel" title="Permanent link">&para;</a></h3>
+<p>Use <code>Open MeshCore Config Panel</code> to access the guided MeshCore setup tools:</p>
+<ul>
+<li><code>Repeater Setup</code></li>
+<li><code>Console</code></li>
+</ul>
+<h4 id="repeater-setup">Repeater Setup<a class="headerlink" href="#repeater-setup" title="Permanent link">&para;</a></h4>
+<p><code>Repeater Setup</code> is the guided first-time repeater flow.</p>
+<p>It is the traditional way to configure a repeater after flashing, including:</p>
+<ul>
+<li>device name</li>
+<li>latitude and longitude</li>
+<li>admin and guest passwords</li>
+<li>radio settings, including preset selection</li>
+<li>advert interval</li>
+<li>flood advert interval</li>
+<li>flood max</li>
+<li>some advanced repeater settings</li>
+</ul>
+<p>As of <code>v1.2.1</code>, the local repeater web panel also includes the same common repeater settings, so users can complete initial setup there and return for occasional troubleshooting or configuration changes. On observers that need maximum headroom, it is still best to disable the panel again when you are finished.</p>
+<h4 id="console">Console<a class="headerlink" href="#console" title="Permanent link">&para;</a></h4>
+<p><code>Console</code> is the raw CLI interface.</p>
+<p>It is especially useful, and often required, for initial Wi-Fi setup on Wi-Fi-capable firmware tracks:</p>
+<ul>
+<li><code>set wifi.ssid &lt;your-ssid&gt;</code></li>
+<li><code>set wifi.pwd &lt;your-password&gt;</code></li>
+</ul>
+<p>This applies to:</p>
+<ul>
+<li><code>companion_radio_wifi</code></li>
+<li><code>repeater_observer</code></li>
+<li><code>repeater_observer_espnow</code></li>
+</ul>
+<h3 id="serial-console">Serial Console<a class="headerlink" href="#serial-console" title="Permanent link">&para;</a></h3>
+<p>Use <code>Serial Console</code> when you want to connect over USB and type CLI commands directly.</p>
+<p>The flasher can connect and disconnect from the device over USB. It also includes preset CLI commands that populate the command input for easier setup:</p>
+<ul>
+<li><code>set wifi.ssid</code></li>
+<li><code>set wifi.pwd</code></li>
+<li><code>get wifi.status</code></li>
+<li><code>get mqtt.status</code></li>
+<li><code>set web on</code></li>
+<li><code>get web.status</code></li>
+</ul>
+<p>For <code>set</code> commands, complete the command in the input box before sending it. For example, select <code>set wifi.ssid</code>, add your Wi-Fi network name, then press <code>Send</code>.</p>
+<h2 id="common-first-steps">Common First Steps<a class="headerlink" href="#common-first-steps" title="Permanent link">&para;</a></h2>
+<h3 id="observer">Observer<a class="headerlink" href="#observer" title="Permanent link">&para;</a></h3>
+<p><code>repeater_observer</code> builds include the EastMesh MQTT additions. Depending on the board, they may also include the local web panel.</p>
+<p>Typical first steps after flashing:</p>
+<ul>
+<li>set <code>wifi.ssid</code></li>
+<li>set <code>wifi.pwd</code></li>
+<li>set <code>mqtt.iata</code></li>
+<li>confirm <code>get mqtt.status</code></li>
+<li>optionally set <code>mqtt.owner</code> and <code>mqtt.email</code></li>
+<li>optionally enable a second broker such as <code>meshmapper</code></li>
+</ul>
+<h3 id="observer-esp-now">Observer ESP-NOW<a class="headerlink" href="#observer-esp-now" title="Permanent link">&para;</a></h3>
+<p><code>repeater_observer_espnow</code> builds combine the observer role with local ESP-NOW bridge support.</p>
+<p>Typical first steps after flashing:</p>
+<ul>
+<li>set <code>wifi.ssid</code></li>
+<li>set <code>wifi.pwd</code></li>
+<li>set <code>mqtt.iata</code></li>
+<li>confirm <code>get mqtt.status</code></li>
+<li>check <code>get wifi.status</code> and note the connected Wi-Fi channel</li>
+<li>set <code>bridge.channel</code> to match that Wi-Fi channel</li>
+<li>set the same <code>bridge.secret</code> on every local ESP-NOW bridge node that should talk together</li>
+</ul>
+<h3 id="repeater-esp-now-bridge">Repeater ESP-NOW Bridge<a class="headerlink" href="#repeater-esp-now-bridge" title="Permanent link">&para;</a></h3>
+<p><code>repeater_bridge_espnow</code> builds are for local ESP-NOW bridge nodes without MQTT uplink.</p>
+<p>Typical first steps after flashing:</p>
+<ul>
+<li>configure the normal repeater settings for the board</li>
+<li>set the intended MeshCore radio preset/config</li>
+<li>set the same bridge channel and secret on the local bridge pair</li>
+<li>confirm both bridge repeaters are physically nearby enough for ESP-NOW to work</li>
+</ul>
+<h3 id="companion-wi-fi">Companion Wi-Fi<a class="headerlink" href="#companion-wi-fi" title="Permanent link">&para;</a></h3>
+<p><code>companion_radio_wifi</code> builds are for companion devices that expose the app interface over Wi-Fi instead of BLE or USB.</p>
+<p>Typical first steps after flashing:</p>
+<ul>
+<li>set Wi-Fi credentials</li>
+<li>confirm <code>get wifi.status</code></li>
+<li>connect your client app to the companion over Wi-Fi</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.action.edit","content.code.copy","search.highlight","search.suggest"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.91a19a9e.min.js"></script>
+      
+    
+  </body>
+</html>

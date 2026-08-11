@@ -1,0 +1,1722 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation for the EastMesh layer on top of MeshCore, including WiFi, MQTT, and release workflows">
+      
+      
+      
+        <link rel="canonical" href="https://xjarid.github.io/MeshCore-EastMesh/boards/">
+      
+      
+        <link rel="prev" href="./..">
+      
+      
+        <link rel="next" href="../releases/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../_assets/xjarid.svg">
+      <meta name="generator" content="zensical-0.0.32">
+    
+    
+      
+        <title>Board Comparison - MeshCore EastMesh Docs</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.53a7feaf.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../_stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#board-comparison" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="MeshCore EastMesh Docs" class="md-header__button md-logo" aria-label="MeshCore EastMesh Docs" data-md-component="logo">
+      
+  <img src="../_assets/xjarid.svg" alt="MeshCore EastMesh Docs">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            MeshCore EastMesh Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Board Comparison
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/xJARiD/MeshCore-EastMesh" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xJARiD/MeshCore-EastMesh
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="MeshCore EastMesh Docs" class="md-nav__button md-logo" aria-label="MeshCore EastMesh Docs" data-md-component="logo">
+      
+  <img src="../_assets/xjarid.svg" alt="MeshCore EastMesh Docs">
+
+    </a>
+    MeshCore EastMesh Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xJARiD/MeshCore-EastMesh" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2026 Fonticons, Inc.--><path fill="currentColor" d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xJARiD/MeshCore-EastMesh
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Boards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#start-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start Here
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#about-the-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        About The Tables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Signals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repeater_observer-boards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        repeater_observer Boards
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#companion_radio_wifi-boards-with-a-display" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        companion_radio_wifi Boards With A Display
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#companion_radio_wifi-headless-boards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        companion_radio_wifi Headless Boards
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-picks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Picks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../releases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Releases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../migration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../web-panel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Web Panel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repeater API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../custom-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#start-here" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Start Here
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#about-the-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        About The Tables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#track-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Track Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Signals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repeater_observer-boards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        repeater_observer Boards
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#companion_radio_wifi-boards-with-a-display" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        companion_radio_wifi Boards With A Display
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#companion_radio_wifi-headless-boards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        companion_radio_wifi Headless Boards
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-picks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Practical Picks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+    <a href="https://github.com/xJARiD/MeshCore-EastMesh/edit/main/eastmesh-docs/boards.md" title="Edit this page" class="md-content__button md-icon" rel="edit">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-file-pen" viewBox="0 0 24 24"><path d="M12.659 22H18a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v9.34"/><path d="M14 2v5a1 1 0 0 0 1 1h5M10.378 12.622a1 1 0 0 1 3 3.003L8.36 20.637a2 2 0 0 1-.854.506l-2.867.837a.5.5 0 0 1-.62-.62l.836-2.869a2 2 0 0 1 .506-.853z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="board-comparison">Board Comparison<a class="headerlink" href="#board-comparison" title="Permanent link">&para;</a></h1>
+<p>This page is meant to help you choose a board, not just list every technical detail.</p>
+<h2 id="start-here">Start Here<a class="headerlink" href="#start-here" title="Permanent link">&para;</a></h2>
+<p>If you are new to MeshCore hardware and just want a sensible starting point, first decide whether the device is a companion or a repeater.</p>
+<p>For companions, think Wi-Fi-connected automation endpoint:</p>
+<ul>
+<li>use companion Wi-Fi builds when another system, such as Home Assistant, RemoteTerm, or your own tooling, needs to connect to MeshCore over Wi-Fi</li>
+<li>these are usually not hands-on daily devices, so a screen is optional rather than a must-have</li>
+<li>headless or simple boards are often fine when the companion will sit near power and be managed from another app or automation system</li>
+<li>check the companion tables below when you do want a display, GPS, or a more complete board package</li>
+</ul>
+<p>For MQTT/web repeaters, think Wi-Fi, broker visibility, and enough headroom for the local web panel:</p>
+<ul>
+<li>common starting points are <code>Heltec_v3</code> and <code>heltec_v4</code></li>
+<li><code>heltec_v4_repeater_observer</code> is a strong all-round observer choice with GPS, PSRAM, and 16 MB flash</li>
+<li>choose boards with more flash and PSRAM when you want MQTT plus the local web panel, stats, or more room for future features</li>
+<li>screens are not a major requirement because observers have the local web panel for setup and troubleshooting</li>
+<li>headless repeaters are often the cleanest choice when the device will live in a roof, box, or fixed install and you will configure it from the web panel, serial console, or app</li>
+</ul>
+<p>For bridge repeaters, think local radio linking between nearby repeaters:</p>
+<ul>
+<li>use bridge firmware when two local repeaters need to exchange traffic across different MeshCore radio configs, such as <code>Australia (Narrow)</code> and <code>Australia (Mid)</code></li>
+<li>pure ESP-NOW bridge repeaters do not need MQTT, the EastMesh web panel, or a screen</li>
+<li>prioritise stable power, suitable antennas, and placement over display features</li>
+<li>use <code>observer-eastmesh-bridge-espnow</code> only when the same repeater also needs MQTT uplink and a local ESP-NOW bridge; otherwise <code>repeater-bridge-espnow</code> keeps the role simpler</li>
+</ul>
+<p>Other notes:</p>
+<ul>
+<li>screens matter more for companions or bench/field devices than fixed repeaters</li>
+<li>if you do want an onboard screen people will actually use, prefer TFT boards</li>
+<li>if you want a low-power status screen, prefer e-paper boards</li>
+<li>if location-aware or mobile use matters, prefer GPS-capable boards such as the T-Beam family, <code>heltec_tracker_v2</code>, <code>Heltec_v3</code>, <code>heltec_v4</code>, or <code>ThinkNode_M5</code></li>
+<li>if you want the most conservative, older radio family choices, the <code>SX1276</code> boards are <code>LilyGo_TLora_V2_1_1_6</code>, <code>Tbeam_SX1276</code>, and <code>Heltec_v2</code></li>
+</ul>
+<h2 id="about-the-tables">About The Tables<a class="headerlink" href="#about-the-tables" title="Permanent link">&para;</a></h2>
+<p>The tables below are built from the repo's PlatformIO board metadata and variant build flags.</p>
+<ul>
+<li><code>Target</code> is the short board name used in this comparison page. Release filenames and local build commands still use the full env names such as <code>heltec_v4_repeater_observer</code>.</li>
+<li><code>MCU</code> shows the chip family only. Actual runtime clock can vary by env and board configuration.</li>
+<li><code>RAM</code> is the MCU's built-in RAM.</li>
+<li><code>PSRAM</code> is extra memory on some boards. More PSRAM usually means more headroom for UI, MQTT, and future features.</li>
+<li><code>GPS</code> uses <code>✅</code> when present and is blank when absent.</li>
+<li><code>SD</code> uses <code>✅</code> when the board is currently known to support the SD-backed archive path in EastMesh, <code>🧪</code> when the hardware likely supports TF/microSD but the board-specific integration still needs validation, and is blank when there is no current SD/archive support note.</li>
+</ul>
+<h2 id="track-notes">Track Notes<a class="headerlink" href="#track-notes" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>companion-wifi</code> boards are for app-connected companion devices.</li>
+<li><code>observer-eastmesh</code> boards are for Wi-Fi repeaters that publish to MQTT.</li>
+<li><code>repeater-bridge-espnow</code> and <code>observer-eastmesh-bridge-espnow</code> boards are for local ESP-NOW bridge use between nearby repeaters on different MeshCore radio configs.</li>
+</ul>
+<p>Bridge firmware is not MQTT-over-WAN or VPN bridging. Use it when two local repeaters need to exchange traffic across radio configs such as <code>Australia (Narrow)</code> and <code>Australia (Mid)</code>.</p>
+<h2 id="additional-signals">Additional Signals<a class="headerlink" href="#additional-signals" title="Permanent link">&para;</a></h2>
+<p>If you are deciding between otherwise similar boards, these target-level settings often matter more than flash alone.</p>
+<ul>
+<li><code>CPU cfg</code> is the runtime clock MeshCore sets for that target. <code>default</code> means MeshCore does not override the board's default clock.</li>
+<li><code>TX cfg</code> is MeshCore's configured <code>LORA_TX_POWER</code>, not guaranteed antenna output. Boards with a PA or RF front-end may radiate much more than the configured value suggests.</li>
+<li><code>Power</code> is how the target exposes power in the repo: <code>ADC batt</code>, <code>PMU</code>, <code>custom 2S</code>, <code>fixed/ext</code>, or <code>none</code>.</li>
+<li><code>Extras</code> lists notable RF or peripheral extras exposed by the target, such as <code>PA/FEM</code>, <code>RF switch</code>, <code>BME280</code>, <code>NeoPixel</code>, or <code>ext ant</code>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>CPU cfg</th>
+<th>TX cfg</th>
+<th>Power</th>
+<th>Extras</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ebyte_EoRa-S3</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>Generic_E22_sx1262</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>Generic_E22_sx1268</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>Heltec_E213</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_E290</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_T190</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>heltec_tracker_v2</td>
+<td>160 MHz</td>
+<td>9 dBm cfg*</td>
+<td>ADC batt</td>
+<td>PA/FEM</td>
+</tr>
+<tr>
+<td>Heltec_v2</td>
+<td>default</td>
+<td>20 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_v3</td>
+<td>80 MHz</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>heltec_v4</td>
+<td>80 MHz</td>
+<td>10 dBm cfg*</td>
+<td>ADC batt</td>
+<td>PA/FEM</td>
+</tr>
+<tr>
+<td>heltec_v4_tft</td>
+<td>80 MHz</td>
+<td>10 dBm cfg*</td>
+<td>ADC batt</td>
+<td>PA/FEM</td>
+</tr>
+<tr>
+<td>Heltec_Wireless_Paper</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_Wireless_Tracker</td>
+<td>80 MHz</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_WSL3</td>
+<td>80 MHz</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>LilyGo_T3S3_sx1262</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>LilyGo_T3S3_sx1276</td>
+<td>default</td>
+<td>20 dBm cfg</td>
+<td>ADC batt</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>LilyGo_TBeam_1W</td>
+<td>default</td>
+<td>22 dBm cfg*</td>
+<td>custom 2S</td>
+<td>PA/FEM</td>
+</tr>
+<tr>
+<td>LilyGo_TDeck</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>LilyGo_Tlora_C6</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>LilyGo_TLora_V2_1_1_6</td>
+<td>default</td>
+<td>20 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>M5Stack_Unit_C6L</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>Meshadventurer_sx1262</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>Meshadventurer_sx1268</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>Meshimi</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td>ext ant</td>
+</tr>
+<tr>
+<td>nibble_screen_connect</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td>NeoPixel</td>
+</tr>
+<tr>
+<td>RAK_3112</td>
+<td>80 MHz</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>Station_G2</td>
+<td>default</td>
+<td>7 dBm cfg*</td>
+<td>fixed/ext</td>
+<td>PA/FEM</td>
+</tr>
+<tr>
+<td>Station_G2_logging</td>
+<td>default</td>
+<td>7 dBm cfg*</td>
+<td>fixed/ext</td>
+<td>PA/FEM</td>
+</tr>
+<tr>
+<td>T_Beam_S3_Supreme_SX1262</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>PMU</td>
+<td>BME280</td>
+</tr>
+<tr>
+<td>Tbeam_SX1262</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>PMU</td>
+<td></td>
+</tr>
+<tr>
+<td>Tbeam_SX1276</td>
+<td>default</td>
+<td>20 dBm cfg</td>
+<td>PMU</td>
+<td></td>
+</tr>
+<tr>
+<td>ThinkNode_M2</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>ThinkNode_M5</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>ADC batt</td>
+<td></td>
+</tr>
+<tr>
+<td>WHY2025_badge</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td></td>
+</tr>
+<tr>
+<td>Xiao_C6</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td>RF switch</td>
+</tr>
+<tr>
+<td>Xiao_S3_WIO</td>
+<td>default</td>
+<td>22 dBm cfg</td>
+<td>none</td>
+<td>RF switch</td>
+</tr>
+</tbody>
+</table>
+<p>* These targets use a PA or RF front-end, so effective output can be much higher than the configured <code>LORA_TX_POWER</code>.</p>
+<h2 id="repeater_observer-boards"><code>repeater_observer</code> Boards<a class="headerlink" href="#repeater_observer-boards" title="Permanent link">&para;</a></h2>
+<p>This table includes all observer targets currently defined in <code>variants/eastmesh/platformio.ini</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>MCU</th>
+<th>RAM</th>
+<th>PSRAM</th>
+<th>Flash</th>
+<th>LoRa</th>
+<th>Display</th>
+<th>GPS</th>
+<th>SD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ebyte_EoRa-S3</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Generic_E22_sx1262</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Generic_E22_sx1268</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1268</td>
+<td>None</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_E213</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>E-paper (2.13")</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_E290</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>E-paper (2.9")</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_T190</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>TFT (ST7789)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>heltec_tracker_v2</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>TFT (ST7735)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_v2</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1276</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_v3</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>heltec_v4</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>heltec_v4_tft</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>TFT (ST7789)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_Wireless_Paper</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>E-paper (2.13")</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_Wireless_Tracker</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>TFT (ST7735)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_WSL3</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>LilyGo_T3S3_sx1262</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+<td>🧪</td>
+</tr>
+<tr>
+<td>LilyGo_T3S3_sx1276</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>4 MB</td>
+<td>SX1276</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+<td>🧪</td>
+</tr>
+<tr>
+<td>LilyGo_TBeam_1W</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>LilyGo_TDeck</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>TFT (ST7789)</td>
+<td>✅</td>
+<td>🧪</td>
+</tr>
+<tr>
+<td>LilyGo_Tlora_C6</td>
+<td>ESP32C6</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>M5Stack_Unit_C6L</td>
+<td>ESP32C6</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Meshadventurer_sx1262</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Meshadventurer_sx1268</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1268</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Meshimi</td>
+<td>ESP32C6</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>nibble_screen_connect</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>RAK_3112</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Station_G2</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Station_G2_logging</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16 MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>T_Beam_S3_Supreme_SX1262</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Tbeam_SX1262</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>Tbeam_SX1276</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1276</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>ThinkNode_M2</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>ThinkNode_M5</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>E-paper (GxEPD)</td>
+<td>✅</td>
+<td></td>
+</tr>
+<tr>
+<td>WHY2025_badge</td>
+<td>ESP32C6</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Xiao_C6</td>
+<td>ESP32C6</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Xiao_S3_WIO</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>None</td>
+<td>✅</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>SD notes:</p>
+<ul>
+<li><code>✅</code> means the board is currently known to work with the SD-backed archive path in EastMesh.</li>
+<li><code>🧪</code> means the board hardware likely supports TF/microSD, but the EastMesh board-specific integration still needs validation before it should be treated as supported.</li>
+<li>For the current stats archive, a <code>4 GB</code> <code>FAT32</code> microSD card is more than sufficient. Larger cards are also supported.</li>
+</ul>
+<h2 id="companion_radio_wifi-boards-with-a-display"><code>companion_radio_wifi</code> Boards With A Display<a class="headerlink" href="#companion_radio_wifi-boards-with-a-display" title="Permanent link">&para;</a></h2>
+<p>These are the Wi-Fi companion targets that have a display configured for local status, setup help, or occasional direct interaction.</p>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>MCU</th>
+<th>RAM</th>
+<th>PSRAM</th>
+<th>Flash</th>
+<th>LoRa</th>
+<th>Display</th>
+<th>GPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heltec_v2</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1276</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+</tr>
+<tr>
+<td>Heltec_v3</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>heltec_tracker_v2</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8MB</td>
+<td>SX1262</td>
+<td>TFT (ST7735)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>heltec_v4</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>16MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>heltec_v4_tft</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>2 MB</td>
+<td>16MB</td>
+<td>SX1262</td>
+<td>TFT (ST7789)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>LilyGo_TBeam_1W</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>LilyGo_TLora_V2_1_1_6</td>
+<td>ESP32</td>
+<td>520 KB</td>
+<td>No</td>
+<td>4 MB</td>
+<td>SX1276</td>
+<td>OLED (SSD1306)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>nibble_screen_connect</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4MB</td>
+<td>SX1262</td>
+<td>OLED (SSD1306)</td>
+<td></td>
+</tr>
+<tr>
+<td>Station_G2</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>16MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>T_Beam_S3_Supreme_SX1262</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>8 MB</td>
+<td>8MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>ThinkNode_M2</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4MB</td>
+<td>SX1262</td>
+<td>OLED (SH1106)</td>
+<td></td>
+</tr>
+<tr>
+<td>ThinkNode_M5</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>4MB</td>
+<td>SX1262</td>
+<td>E-paper (GxEPD)</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h2 id="companion_radio_wifi-headless-boards"><code>companion_radio_wifi</code> Headless Boards<a class="headerlink" href="#companion_radio_wifi-headless-boards" title="Permanent link">&para;</a></h2>
+<p>These are the Wi-Fi companion targets that rely on the companion app as the primary interface. For many users, this is the best everyday option.</p>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>MCU</th>
+<th>RAM</th>
+<th>PSRAM</th>
+<th>Flash</th>
+<th>LoRa</th>
+<th>GPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Heltec_WSL3</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>RAK_3112</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>Xiao_S3_WIO</td>
+<td>ESP32S3</td>
+<td>512 KB</td>
+<td>No</td>
+<td>8 MB</td>
+<td>SX1262</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h2 id="practical-picks">Practical Picks<a class="headerlink" href="#practical-picks" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Best all-round observer with screen and overall headroom: <code>heltec_v4_repeater_observer</code>, <code>heltec_v4_tft_repeater_observer</code>, <code>Station_G2_repeater_observer</code>, <code>LilyGo_TBeam_1W_repeater_observer</code>.</li>
+<li>Best observer if you want a simple headless install: <code>RAK_3112_repeater_observer</code>, <code>Generic_E22_sx1262_repeater_observer</code>, <code>Meshimi_repeater_observer</code>, <code>Xiao_C6_repeater_observer</code>.</li>
+<li>Best low-power display observer builds: <code>Heltec_E213_repeater_observer</code>, <code>Heltec_E290_repeater_observer</code>, <code>Heltec_Wireless_Paper_repeater_observer</code>, <code>ThinkNode_M5_Repeater_observer</code>.</li>
+<li>Best companion choices if you want the richest local UI: <code>heltec_v4_tft_companion_radio_wifi</code> and <code>heltec_tracker_v2_companion_radio_wifi</code>.</li>
+<li>Best companion choices if you want maximum memory headroom: <code>T_Beam_S3_Supreme_SX1262_companion_radio_wifi</code>, <code>Station_G2_companion_radio_wifi</code>, <code>LilyGo_TBeam_1W_companion_radio_wifi</code>.</li>
+<li>Best companion choices if you are happy with an app-first, mostly headless setup: <code>RAK_3112_companion_radio_wifi</code>, <code>Xiao_S3_WIO_companion_radio_wifi</code>, <code>Station_G2_companion_radio_wifi</code>.</li>
+<li>Best companion choices if you prefer OLED over TFT: <code>T_Beam_S3_Supreme_SX1262_companion_radio_wifi</code>, <code>heltec_v4_companion_radio_wifi</code>, <code>LilyGo_TBeam_1W_companion_radio_wifi</code>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.action.edit","content.code.copy","search.highlight","search.suggest"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.91a19a9e.min.js"></script>
+      
+    
+  </body>
+</html>
