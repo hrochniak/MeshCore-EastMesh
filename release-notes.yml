@@ -55,6 +55,43 @@ releases:
         text: "Included upstream board, UI, power-saving, and platform fixes from MeshCore dev."
     breaking_changes: []
 
+  - track: companion-wifi
+    version: "1.17.0"
+    tag: "companion-wifi-v1.17.0"
+    date: "2026-08-09"
+    previous_version: "1.16.0"
+    summary: "Updates companion WiFi firmware to upstream MeshCore v1.17.0 with the new key-based settings format, interface manager, and a recovery access point for fixing Wi-Fi credentials without a serial cable."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Updated the companion WiFi firmware base to upstream MeshCore v1.17.0."
+      - type: added
+        area: wifi
+        text: "Added a recovery access point: when the device has no Wi-Fi credentials or cannot connect for 60 seconds, it broadcasts `EastMesh-WiFi` (WPA2 password = the device pin zero-padded to 8 digits) and shuts the AP down automatically once the configured network connects."
+      - type: added
+        area: cli
+        text: "Exposed the rescue CLI over TCP port 23 on the recovery AP (`telnet 192.168.4.1`), so `set wifi.ssid`, `set wifi.pwd`, and `reboot` work without a serial cable."
+      - type: added
+        area: wifi
+        text: "The companion app works over the recovery AP too: connect to host `192.168.4.1` port `5000` for full app connectivity while roaming away from the configured network."
+      - type: added
+        area: wifi
+        text: "Gave companion WiFi builds the BLE-style device pin rules: displays show a per-session `Pin:NNNNNN` on the home screen, headless devices default to pin `123456` (AP password `00123456`), and `set pin` overrides both persistently."
+      - type: fixed
+        area: wifi
+        text: "Kept the recovery AP joinable by pausing constant station rescans while it is up (they broke joining clients' WPA2 handshakes, which phones report as a wrong password); the configured network is retried once a minute instead."
+      - type: changed
+        area: prefs
+        text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including persisted Wi-Fi credentials, are migrated automatically on first boot."
+      - type: changed
+        area: wifi
+        text: "Adopted upstream's new interface manager so BLE, Wi-Fi, USB, and serial companion connections are handled uniformly, while keeping Wi-Fi credentials configurable at runtime."
+      - type: changed
+        area: board
+        text: "Included upstream board, radio, display, UI, and platform fixes from MeshCore dev, including new board support and LR2021 radio groundwork."
+    breaking_changes:
+      - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
+
   - track: repeater-bridge-espnow
     version: "1.15.0"
     tag: "repeater-bridge-espnow-v1.15.0"
@@ -87,6 +124,25 @@ releases:
         area: board
         text: "Included upstream board, radio, UI, and platform fixes from MeshCore dev."
     breaking_changes: []
+
+  - track: repeater-bridge-espnow
+    version: "1.17.0"
+    tag: "repeater-bridge-espnow-v1.17.0"
+    date: "2026-08-09"
+    previous_version: "1.16.0"
+    summary: "Updates repeater ESP-NOW bridge firmware to upstream MeshCore v1.17.0 with the new key-based settings format."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Updated the repeater ESP-NOW bridge firmware base to upstream MeshCore v1.17.0."
+      - type: changed
+        area: prefs
+        text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including bridge configuration, are migrated automatically on first boot."
+      - type: changed
+        area: board
+        text: "Included upstream board, radio, display, and platform fixes from MeshCore dev, including new board support and an external watchdog manager."
+    breaking_changes:
+      - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
 
   - track: observer-eastmesh
     version: "2026.5.1"
@@ -299,6 +355,40 @@ releases:
     breaking_changes:
       - "The saved settings layout changed; devices upgrading from 2026.6.6 or earlier may need EastMesh-specific settings (such as fan control and bridge peer) and recently added radio settings reconfigured."
 
+  - track: observer-eastmesh
+    version: "2026.8.0"
+    tag: "observer-eastmesh-v2026.8.0"
+    date: "2026-08-09"
+    previous_version: "2026.7.0"
+    summary: "Updates Observer firmware to upstream MeshCore v1.17.0 with the new key-based settings format and fixes the web panel becoming unreachable after long uptimes."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Merged upstream MeshCore v1.17.0 including new board support, ethernet interface groundwork, LR2021 radio support, display and UI improvements, and platform fixes."
+      - type: changed
+        area: prefs
+        text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including EastMesh fan control and bridge peer configuration, are migrated automatically on first boot."
+      - type: fixed
+        area: web
+        text: "Fixed the web panel refusing connections (browser `PR_CONNECT_RESET_ERROR`) after long uptimes by evicting stale keep-alive connections instead of letting vanished clients permanently occupy the connection pool."
+    breaking_changes:
+      - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
+
+  - track: observer-eastmesh
+    version: "2026.8.1"
+    tag: "observer-eastmesh-v2026.8.1"
+    date: "2026-08-09"
+    previous_version: "2026.8.0"
+    summary: "Hardens T-Beam S3 Supreme display bring-up so a failed boot-time OLED probe can no longer crash-loop the node."
+    changes:
+      - type: fixed
+        area: board
+        text: "Restored the proven T-Beam S3 Supreme SH1106 bring-up order (initialise the display before probing the bus, which can NAK cold probes on this board) so the OLED reliably comes up at boot."
+      - type: fixed
+        area: board
+        text: "Made a failed or absent SH1106 display boot the node headless instead of crash-looping: display operations are now safe no-ops when the boot-time initialisation did not succeed."
+    breaking_changes: []
+
   - track: observer-eastmesh-bridge-espnow
     version: "2026.5.1"
     tag: "observer-eastmesh-bridge-espnow-v2026.5.1"
@@ -509,3 +599,37 @@ releases:
         text: "Bumped CI build and docs workflows to Python 3.13."
     breaking_changes:
       - "The saved settings layout changed; devices upgrading from 2026.6.6 or earlier may need EastMesh-specific settings (such as fan control and bridge peer) and recently added radio settings reconfigured."
+
+  - track: observer-eastmesh-bridge-espnow
+    version: "2026.8.0"
+    tag: "observer-eastmesh-bridge-espnow-v2026.8.0"
+    date: "2026-08-09"
+    previous_version: "2026.7.0"
+    summary: "Updates Observer ESP-NOW bridge firmware to upstream MeshCore v1.17.0 with the new key-based settings format and fixes the web panel becoming unreachable after long uptimes."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Merged upstream MeshCore v1.17.0 including new board support, ethernet interface groundwork, LR2021 radio support, display and UI improvements, and platform fixes."
+      - type: changed
+        area: prefs
+        text: "Moved saved node settings to upstream's new key-based `prefs.json` format; existing settings, including EastMesh fan control and bridge peer configuration, are migrated automatically on first boot."
+      - type: fixed
+        area: web
+        text: "Fixed the web panel refusing connections (browser `PR_CONNECT_RESET_ERROR`) after long uptimes by evicting stale keep-alive connections instead of letting vanished clients permanently occupy the connection pool."
+    breaking_changes:
+      - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
+
+  - track: observer-eastmesh-bridge-espnow
+    version: "2026.8.1"
+    tag: "observer-eastmesh-bridge-espnow-v2026.8.1"
+    date: "2026-08-09"
+    previous_version: "2026.8.0"
+    summary: "Hardens T-Beam S3 Supreme display bring-up so a failed boot-time OLED probe can no longer crash-loop the node."
+    changes:
+      - type: fixed
+        area: board
+        text: "Restored the proven T-Beam S3 Supreme SH1106 bring-up order (initialise the display before probing the bus, which can NAK cold probes on this board) so the OLED reliably comes up at boot."
+      - type: fixed
+        area: board
+        text: "Made a failed or absent SH1106 display boot the node headless instead of crash-looping: display operations are now safe no-ops when the boot-time initialisation did not succeed."
+    breaking_changes: []

@@ -274,3 +274,60 @@ Companion Wi-Fi builds also still support the existing rescue commands such as:
 - `cat ...`
 - `rm ...`
 - `reboot`
+
+### Recovery Access Point
+
+When a companion Wi-Fi device has no Wi-Fi credentials configured, or cannot connect
+to its configured network for 60 seconds, it broadcasts its own `EastMesh-WiFi`
+access point so it can be rescued without a serial cable.
+
+**The AP password is the device pin, zero-padded to 8 digits** (WPA2 requires at
+least 8 characters). The pin follows the same rules as the Bluetooth pairing pin on
+BLE builds:
+
+| Device | Active pin | `EastMesh-WiFi` password |
+| --- | --- | --- |
+| Has a screen, no pin set | random 6-digit pin each boot, shown as `Pin:NNNNNN` on the home screen | `00NNNNNN` — read it off the screen |
+| No screen, no pin set | `123456` (default) | `00123456` |
+| Pin set via `set pin <pin>` | your configured pin (any device) | your pin zero-padded to 8 digits, e.g. pin `4242` → `00004242` |
+
+Notes on the pin:
+
+- on devices with a screen, the pin is only random while no pin has been saved; run
+  `set pin <pin>` for a fixed password (takes effect next boot)
+- headless devices in public areas should always get a custom pin — `00123456` is a
+  documented default, so treat it like a default router password
+
+Recovery steps:
+
+1. join the `EastMesh-WiFi` network with the password from the table above
+2. open the rescue CLI with `telnet 192.168.4.1` (or `nc 192.168.4.1 23`) — all
+   rescue commands above are available
+3. `set wifi.ssid <ssid>`, then `set wifi.pwd <password>` — the device immediately
+   retries the network with the new credentials
+4. `reboot` (or just wait — see below)
+
+While the AP is up the device keeps retrying its configured network about once a
+minute (expect a brief AP hiccup at each attempt); as soon as the station
+connection succeeds, the recovery AP shuts down automatically (this also drops
+your rescue session — that's the sign it worked).
+
+### Using the Companion App over the AP (Roaming)
+
+The recovery AP is not just for fixing credentials — the full companion protocol
+is available through it, which makes it a roaming access mode when the device is
+away from its configured network:
+
+1. join `EastMesh-WiFi` with the pin-derived password (see the table above)
+2. in the MeshCore companion app, add/connect a Wi-Fi device with host
+   `192.168.4.1` and port `5000`
+3. use the app normally — messages, contacts, channels all work over the AP
+
+Notes for roaming use:
+
+- run `set pin <pin>` once so the AP password stays fixed across reboots;
+  otherwise devices with a screen pick a new random pin every boot
+- the AP appears about 60 seconds after boot (the device tries its configured
+  network first), and stays up for as long as that network is unreachable
+- back in range of its configured network, the device joins it and shuts the AP
+  down automatically — reconnect the app via the LAN address instead

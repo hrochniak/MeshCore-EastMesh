@@ -3597,6 +3597,10 @@ bool WebPanelServer::start() {
   config.httpd.backlog_conn = 2;
   config.httpd.recv_wait_timeout = 15;
   config.httpd.send_wait_timeout = 15;
+  // Evict the least-recently-used connection when the pool is full. Without this,
+  // clients that vanish without closing (lid shut, out of range) permanently occupy
+  // the 2 sockets and every later connect is reset (Firefox PR_CONNECT_RESET_ERROR).
+  config.httpd.lru_purge_enable = true;
   config.httpd.stack_size = kWebServerStackSize;
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
   config.servercert = reinterpret_cast<const uint8_t*>(mqtt_web_panel_cert::kServerCertPem);
@@ -3658,6 +3662,7 @@ bool WebPanelServer::start() {
   redirect_config.backlog_conn = 2;
   redirect_config.recv_wait_timeout = 2;
   redirect_config.send_wait_timeout = 2;
+  redirect_config.lru_purge_enable = true;  // same zombie-socket protection as the HTTPS listener
   redirect_config.stack_size = kWebServerStackSize;
   redirect_config.uri_match_fn = httpd_uri_match_wildcard;
 

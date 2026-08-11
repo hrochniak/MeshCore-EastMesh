@@ -7,10 +7,12 @@
 #include <helpers/radiolib/CustomSX1262Wrapper.h>
 #include <helpers/AutoDiscoverRTCClock.h>
 #include <helpers/sensors/EnvironmentSensorManager.h>
+#include <helpers/ui/MomentaryButton.h>
+
 #ifdef DISPLAY_CLASS
   #include <helpers/ui/SSD1306Display.h>
-  #include <helpers/ui/MomentaryButton.h>
 #endif
+#define HAS_USER_BUTTON 1
 #include "XiaoS3WIOBoard.h"
 
 extern XiaoS3WIOBoard board;
@@ -20,8 +22,8 @@ extern EnvironmentSensorManager sensors;
 
 #ifdef DISPLAY_CLASS
   extern DISPLAY_CLASS display;
-  extern MomentaryButton user_btn;
 #endif
+extern MomentaryButton user_btn;
 
 bool radio_init();
 mesh::LocalIdentity radio_new_identity();

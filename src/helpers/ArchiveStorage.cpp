@@ -105,8 +105,14 @@ SPIClass* getBoardSharedArchiveSPI() {
 }
 #endif
 
+#if defined(ESP32)
+  #define ARCHIVE_DEFAULT_SPI_BUS HSPI
+#else
+  #define ARCHIVE_DEFAULT_SPI_BUS 0
+#endif
+
 ArchiveStorage::ArchiveStorage()
-    : _attempted(false), _mounted(false), _mount_failed(false), _supported(false), _card_type(0), _spi_bus(HSPI),
+    : _attempted(false), _mounted(false), _mount_failed(false), _supported(false), _card_type(0), _spi_bus(ARCHIVE_DEFAULT_SPI_BUS),
       _cs_pin(0xFF), _sck_pin(0xFF),
       _miso_pin(0xFF), _mosi_pin(0xFF), _card_size_bytes(0), _total_bytes(0), _used_bytes(0)
 #if defined(ESP32)
@@ -115,6 +121,7 @@ ArchiveStorage::ArchiveStorage()
 {
 }
 
+#if defined(ESP32)
 namespace {
 
 bool mountArchiveSd(SPIClass* spi,
@@ -137,6 +144,7 @@ bool mountArchiveSd(SPIClass* spi,
 }
 
 }  // namespace
+#endif
 
 void ArchiveStorage::begin() {
   if (_attempted) {

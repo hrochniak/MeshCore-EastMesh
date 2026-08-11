@@ -18,21 +18,22 @@ class SH1106Display : public DisplayDriver
 {
   Adafruit_SH1106G display;
   bool _isOn;
+  bool _began;
   uint8_t _color;
 
   bool i2c_probe(TwoWire &wire, uint8_t addr);
 
 public:
-  SH1106Display() : DisplayDriver(128, 64), display(128, 64, &Wire, PIN_OLED_RESET) { _isOn = false; }
+  SH1106Display() : DisplayDriver(128, 64), display(128, 64, &Wire, PIN_OLED_RESET) { _isOn = false; _began = false; }
   bool begin();
 
   bool isOn() override { return _isOn; }
   void turnOn() override;
   void turnOff() override;
   void clear() override;
-  void startFrame(Color bkg = DARK) override;
+  void startFrame(ColorVal bkg = UIColor::window_bkg) override;
   void setTextSize(int sz) override;
-  void setColor(Color c) override;
+  void setColor(ColorVal c) override;
   void setCursor(int x, int y) override;
   void print(const char *str) override;
   void fillRect(int x, int y, int w, int h) override;
