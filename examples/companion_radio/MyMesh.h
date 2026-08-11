@@ -115,6 +115,7 @@ public:
   void handleCmdFrame(size_t len);
   bool advert();
   void enterCLIRescue();
+  bool isCLIRescue() const { return _cli_rescue; }
 
   int  getRecentlyHeard(AdvertPath dest[], int max_num);
 

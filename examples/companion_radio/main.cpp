@@ -196,26 +196,31 @@ void setup() {
 
 // add wifi interface
 #ifdef WIFI_SSID
-  board.setInhibitSleep(true);   // prevent sleep when WiFi is active
-  WiFi.mode(WIFI_STA);
-  WiFi.setSleep(static_cast<wifi_ps_type_t>(the_mesh.getWifiPowerSaveMode()));
-  WiFi.setAutoReconnect(true);
+  if (the_mesh.isCLIRescue()) {
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+  } else {
+    board.setInhibitSleep(true);   // prevent sleep when WiFi is active
+    WiFi.mode(WIFI_STA);
+    WiFi.setSleep(static_cast<wifi_ps_type_t>(the_mesh.getWifiPowerSaveMode()));
+    WiFi.setAutoReconnect(true);
 
-  WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info){
-      if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
-          WIFI_DEBUG_PRINTLN("WiFi disconnected. Flagging for reconnect...");
-          wifi_needs_reconnect = true;
-      } else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
-          WIFI_DEBUG_PRINTLN("WiFi connected successfully!");
-          wifi_needs_reconnect = false;
-      }
-  });
+    WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info){
+        if (event == ARDUINO_EVENT_WIFI_STA_DISCONNECTED) {
+            WIFI_DEBUG_PRINTLN("WiFi disconnected. Flagging for reconnect...");
+            wifi_needs_reconnect = true;
+        } else if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
+            WIFI_DEBUG_PRINTLN("WiFi connected successfully!");
+            wifi_needs_reconnect = false;
+        }
+    });
 
-  if (the_mesh.getWifiSSID()[0]) {
-    WiFi.begin(the_mesh.getWifiSSID(), the_mesh.getWifiPassword());
+    if (the_mesh.getWifiSSID()[0] && strcmp(the_mesh.getWifiSSID(), "myssid") != 0) {
+      WiFi.begin(the_mesh.getWifiSSID(), the_mesh.getWifiPassword());
+    }
+    wifi_interface.begin(TCP_PORT);
+    interface_manager.addInterface(InterfaceType::WiFi, &wifi_interface);
   }
-  wifi_interface.begin(TCP_PORT);
-  interface_manager.addInterface(InterfaceType::WiFi, &wifi_interface);
 #endif
 
 // add usb interface
@@ -249,6 +254,12 @@ void setup() {
   ui_task.begin(disp, &sensors, the_mesh.getNodePrefs());  // still want to pass this in as dependency, as prefs might be moved
 #endif
 
+#if defined(ESP32) && defined(WIFI_SSID)
+  if (!the_mesh.getWifiSSID()[0] || strcmp(the_mesh.getWifiSSID(), "myssid") == 0) {
+    the_mesh.enterCLIRescue();
+  }
+#endif
+
   board.onBootComplete();
 }
 
@@ -262,6 +273,17 @@ void loop() {
   sensors.loop();
 #ifdef DISPLAY_CLASS
   ui_task.loop();
+#elif defined(ESP32)
+  static bool btn_initialized = false;
+  if (!btn_initialized) {
+    user_btn.begin();
+    btn_initialized = true;
+  }
+  if (millis() < 8000) {
+    if (user_btn.check() == 1) { // 1 = long press
+      the_mesh.enterCLIRescue();
+    }
+  }
 #endif
   rtc_clock.tick();
 #ifdef HAS_EXTERNAL_WATCHDOG
@@ -275,12 +297,17 @@ void loop() {
   }
 
 #if defined(ESP32) && defined(WIFI_SSID)
+<<<<<<< Updated upstream
   // Safely attempt to reconnect every 10 seconds if flagged.
   // Skipped while the recovery AP is up: constant STA rescans drag the AP's radio
   // across channels and break joining clients' WPA2 handshakes; loopRecoveryAP()
   // owns the (slower) STA retry cadence in that state.
   if (!the_mesh.isRecoveryAPActive() &&
       wifi_needs_reconnect && (millis() - last_wifi_reconnect_attempt > 10000)) {
+=======
+  // Safely attempt to reconnect every 10 seconds if flagged
+  if (wifi_needs_reconnect && !the_mesh.isCLIRescue() && (millis() - last_wifi_reconnect_attempt > 10000)) {
+>>>>>>> Stashed changes
     WIFI_DEBUG_PRINTLN("Attempting manual WiFi reconnect...");
     WiFi.disconnect();
     WiFi.reconnect();
