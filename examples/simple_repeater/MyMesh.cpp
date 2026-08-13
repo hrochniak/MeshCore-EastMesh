@@ -2393,6 +2393,9 @@ void MyMesh::handleCommand(uint32_t sender_timestamp, char *command, char *reply
     } else {
       strcpy(reply, "Err - use none|min|max");
     }
+  } else if (strcmp(command, "wifi reconnect") == 0) {
+    network.forceReconnect();
+    strcpy(reply, "OK - wifi reconnecting");
   } else if (memcmp(command, "set ntp.server1 ", 16) == 0) {
     if (network.setNtpServer(1, &command[16])) {
       strcpy(reply, "OK");

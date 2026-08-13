@@ -6,6 +6,8 @@
 
 #if defined(ESP_PLATFORM)
   #include <WiFi.h>
+
+  #include <atomic>
 #endif
 
 #include "NetworkPrefs.h"
@@ -30,6 +32,7 @@ public:
   const char* getNtpServer(uint8_t index) const;
   void formatWifiStatusReply(char* reply, size_t reply_size) const;
   void reconnectWifi();
+  void forceReconnect();
 
   bool isWifiConnected() const override;
   bool hasTimeSync() const override { return _have_time_sync; }
@@ -41,6 +44,8 @@ private:
   void ensureWifi(bool network_required);
   void updateTimeSync();
   void restartTimeSync();
+  void updateConnectivityWatchdog();
+  static void watchdogProbeCallback(void* arg);
 #endif
   static bool isValidNtpServer(const char* server);
   bool savePrefs();
@@ -52,4 +57,16 @@ private:
   bool _have_time_sync;
   int _last_wifi_status;
   unsigned long _last_wifi_attempt;
+#if defined(ESP_PLATFORM)
+  // Connectivity watchdog: _wd_gateway_seen and _wd_probe_pending are shared with
+  // the lwIP tcpip thread; _wd_gateway_ip is only written while no probe is pending.
+  std::atomic<bool> _wd_gateway_seen;
+  std::atomic<bool> _wd_probe_pending;
+  uint32_t _wd_gateway_ip;
+  bool _wd_was_connected;
+  unsigned long _wd_last_gateway_ok;
+  unsigned long _wd_last_probe;
+  uint8_t _wd_backoff_shift;
+  uint16_t _wd_reconnect_count;
+#endif
 };
