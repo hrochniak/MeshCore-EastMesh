@@ -6,7 +6,12 @@
 
 #if defined(ESP_PLATFORM)
   #include <WiFi.h>
+  #include <esp_netif.h>
+  #include <esp_netif_net_stack.h>
   #include <esp_sntp.h>
+  #include <lwip/etharp.h>
+  #include <lwip/netif.h>
+  #include <lwip/tcpip.h>
 #endif
 
 namespace {
@@ -15,6 +20,9 @@ namespace {
 constexpr unsigned long kWifiRetryMillis = 15000;
 constexpr unsigned long kWifiConnectTimeoutMillis = 45000;
 constexpr unsigned long kWifiChannelHintTimeoutMillis = 7000;
+constexpr unsigned long kWatchdogProbeMillis = 30000;
+constexpr unsigned long kWatchdogTimeoutMillis = 180000;
+constexpr uint8_t kWatchdogMaxBackoffShift = 4;  // 180s .. 48min between forced reconnects
 constexpr time_t kMinSaneEpoch = 1735689600;  // 2025-01-01T00:00:00Z
 constexpr size_t kNtpServerMaxLen = 64;
 
@@ -50,6 +58,16 @@ const char* getWifiQualityLabel(int rssi_dbm) {
 
 NetworkService::NetworkService()
     : _fs(nullptr), _prefs{}, _wifi_started(false), _sntp_started(false), _have_time_sync(false), _last_wifi_status(-1), _last_wifi_attempt(0) {
+#if defined(ESP_PLATFORM)
+  _wd_gateway_seen = false;
+  _wd_probe_pending = false;
+  _wd_gateway_ip = 0;
+  _wd_was_connected = false;
+  _wd_last_gateway_ok = 0;
+  _wd_last_probe = 0;
+  _wd_backoff_shift = 0;
+  _wd_reconnect_count = 0;
+#endif
   NetworkPrefsStore::setDefaults(_prefs);
 }
 
@@ -85,6 +103,7 @@ void NetworkService::loop(bool network_required) {
 #if defined(ESP_PLATFORM)
   ensureWifi(network_required);
   updateTimeSync();
+  updateConnectivityWatchdog();
 #else
   (void)network_required;
 #endif
@@ -280,10 +299,12 @@ void NetworkService::formatWifiStatusReply(char* reply, size_t reply_size) const
 
   if (wifi_status == WL_CONNECTED) {
     const int rssi_dbm = WiFi.RSSI();
+    const unsigned long gateway_silence_ms = millis() - _wd_last_gateway_ok;
     snprintf(reply, reply_size,
-             "> ssid:%s status:%s code:%d state:%s ip:%s channel:%d rssi:%d quality:%d%% signal:%s",
+             "> ssid:%s status:%s code:%d state:%s ip:%s channel:%d rssi:%d quality:%d%% signal:%s gw:%s wd:%u",
              _prefs.wifi_ssid, status, static_cast<int>(wifi_status), state, WiFi.localIP().toString().c_str(),
-             WiFi.channel(), rssi_dbm, getWifiQualityPercent(rssi_dbm), getWifiQualityLabel(rssi_dbm));
+             WiFi.channel(), rssi_dbm, getWifiQualityPercent(rssi_dbm), getWifiQualityLabel(rssi_dbm),
+             gateway_silence_ms < (kWatchdogProbeMillis * 3) ? "ok" : "lost", _wd_reconnect_count);
   } else {
     snprintf(reply, reply_size, "> ssid:%s status:%s code:%d state:%s", _prefs.wifi_ssid[0] ? _prefs.wifi_ssid : "-",
              status, static_cast<int>(wifi_status), state);
@@ -299,11 +320,21 @@ void NetworkService::reconnectWifi() {
     WiFi.disconnect(true, true);
     WiFi.mode(WIFI_OFF);
   }
+  _wd_was_connected = false;
 #endif
   _wifi_started = false;
   _sntp_started = false;
   _have_time_sync = false;
   _last_wifi_attempt = 0;
+}
+
+void NetworkService::forceReconnect() {
+#if defined(ESP_PLATFORM)
+  // Clear the channel hint (RAM only) so the retry does a full scan and can land
+  // on a different AP; the hint is re-learned and persisted on the next connect.
+  _prefs.wifi_channel = 0;
+#endif
+  reconnectWifi();
 }
 
 void NetworkService::restartTimeSync() {
@@ -450,5 +481,72 @@ void NetworkService::updateTimeSync() {
   bool sane_time = now >= kMinSaneEpoch;
   bool sync_ready = sync_status == SNTP_SYNC_STATUS_COMPLETED || sync_status == SNTP_SYNC_STATUS_IN_PROGRESS;
   _have_time_sync = sane_time && (sync_ready || prev_have_time_sync);
+}
+
+// Runs in the lwIP tcpip thread (posted via tcpip_callback), where raw etharp
+// calls are safe without core locking.
+void NetworkService::watchdogProbeCallback(void* arg) {
+  NetworkService* self = static_cast<NetworkService*>(arg);
+  esp_netif_t* esp_nif = esp_netif_get_handle_from_ifkey("WIFI_STA_DEF");
+  struct netif* nif = esp_nif ? static_cast<struct netif*>(esp_netif_get_netif_impl(esp_nif)) : nullptr;
+  if (nif != nullptr && netif_is_up(nif)) {
+    ip4_addr_t gw;
+    gw.addr = self->_wd_gateway_ip;
+    struct eth_addr* eth_ret = nullptr;
+    const ip4_addr_t* ip_ret = nullptr;
+    if (etharp_find_addr(nif, &gw, &eth_ret, &ip_ret) >= 0) {
+      self->_wd_gateway_seen = true;
+    }
+    etharp_request(nif, &gw);
+  }
+  self->_wd_probe_pending = false;
+}
+
+void NetworkService::updateConnectivityWatchdog() {
+  if (!_wifi_started || WiFi.status() != WL_CONNECTED) {
+    _wd_was_connected = false;
+    return;
+  }
+
+  const unsigned long now_ms = millis();
+  if (!_wd_was_connected) {
+    // Fresh association: give the gateway a full window before judging it.
+    _wd_was_connected = true;
+    _wd_last_gateway_ok = now_ms;
+    _wd_last_probe = 0;
+    _wd_gateway_seen = false;
+  }
+
+  if (_wd_gateway_seen.exchange(false)) {
+    _wd_last_gateway_ok = now_ms;
+    _wd_backoff_shift = 0;
+  }
+
+  const uint32_t gateway_ip = static_cast<uint32_t>(WiFi.gatewayIP());
+  if (gateway_ip == 0) {
+    // No gateway (e.g. static IP without one) - nothing meaningful to probe.
+    _wd_last_gateway_ok = now_ms;
+    return;
+  }
+
+  if (now_ms - _wd_last_probe >= kWatchdogProbeMillis && !_wd_probe_pending.load()) {
+    _wd_last_probe = now_ms;
+    _wd_gateway_ip = gateway_ip;
+    _wd_probe_pending = true;
+    if (tcpip_callback(watchdogProbeCallback, this) != ERR_OK) {
+      _wd_probe_pending = false;
+    }
+  }
+
+  const unsigned long timeout = kWatchdogTimeoutMillis << _wd_backoff_shift;
+  if (now_ms - _wd_last_gateway_ok >= timeout) {
+    _wd_reconnect_count++;
+    if (_wd_backoff_shift < kWatchdogMaxBackoffShift) {
+      _wd_backoff_shift++;
+    }
+    Serial.printf("[WDOG] gateway unreachable for %lus, forcing wifi reconnect (count=%u)\n",
+                  (now_ms - _wd_last_gateway_ok) / 1000, _wd_reconnect_count);
+    forceReconnect();
+  }
 }
 #endif
