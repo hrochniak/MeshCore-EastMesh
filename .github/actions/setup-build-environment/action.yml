@@ -96,6 +96,9 @@ runs:
           FIRMWARE_VERSION="${BASH_REMATCH[1]}"
         elif [[ "$GIT_TAG_NAME" =~ ^repeater-bridge-espnow-(v[[:alnum:]._-]+)$ ]]; then
           FIRMWARE_VERSION="${BASH_REMATCH[1]}"
+        elif [[ "$GIT_TAG_NAME" =~ ^v([0-9]+\.[0-9]+\.[0-9]+.*)$ ]]; then
+          # Match direct version tags like v1.17.1
+          FIRMWARE_VERSION="v${BASH_REMATCH[1]}"
         else
           echo "Unsupported release tag format: $GIT_TAG_NAME" >&2
           exit 1
