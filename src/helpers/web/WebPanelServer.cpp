@@ -1918,20 +1918,25 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
       return parsed;
     }
     function parseWifiStatusReply(text) {
-      const parsed = parseKeyedReply(text, ["ssid", "status", "code", "state", "ip", "rssi", "quality", "signal"]);
+      const parsed = parseKeyedReply(text, ["ssid", "status", "code", "state", "ip", "channel", "rssi", "quality", "signal", "gw", "wd"]);
       if (!parsed) return null;
       const rssi = Number.parseInt(parsed.rssi, 10);
       const quality = Number.parseInt(String(parsed.quality || "").replace("%", ""), 10);
       const code = Number.parseInt(parsed.code, 10);
+      const channel = Number.parseInt(parsed.channel, 10);
+      const watchdogCount = Number.parseInt(parsed.wd, 10);
       return {
         ssid: parsed.ssid || "-",
         status: parsed.status || "unknown",
         code: Number.isFinite(code) ? code : null,
         state: parsed.state || "unknown",
         ip: parsed.ip || "--",
+        channel: Number.isFinite(channel) ? channel : null,
         rssi: Number.isFinite(rssi) ? rssi : null,
         quality: Number.isFinite(quality) ? quality : null,
-        signal: parsed.signal || "--"
+        signal: parsed.signal || "--",
+        gateway: parsed.gw || null,
+        watchdog_count: Number.isFinite(watchdogCount) ? watchdogCount : null
       };
     }
     function renderCoreCard(core) {
@@ -1978,6 +1983,8 @@ const char kWebPanelAppHtml[] PROGMEM = R"HTML(
           ${renderMetric("State", wifi.state || "--")}
           ${renderMetric("SSID", wifi.ssid || "-")}
           ${renderMetric("IP", wifi.ip || "--")}
+          ${renderMetric("Channel", wifi.channel == null ? "--" : wifi.channel)}
+          ${renderMetric("Gateway", wifi.gateway ? wifi.gateway + (wifi.watchdog_count ? " (wd " + wifi.watchdog_count + ")" : "") : "--")}
           ${renderMetric("Power Save", powersave || "--")}
           ${renderMetric("Code", wifi.code == null ? "--" : wifi.code)}
         </div>

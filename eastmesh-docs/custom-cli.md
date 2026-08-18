@@ -123,12 +123,15 @@ Legacy dotted aliases are also accepted:
 
 ### Wi-Fi Settings For Observers
 
-- `get wifi.status`: shows SSID, connection state, raw Wi-Fi status code, IP, channel, and signal when connected.
+- `get wifi.status`: shows SSID, connection state, raw Wi-Fi status code, IP, channel, and signal when connected, plus gateway health (`gw:ok|lost`) and the watchdog reconnect count (`wd:<n>`).
 - `get wifi.ssid`: shows the configured Wi-Fi SSID.
 - `set wifi.ssid <ssid>`: sets the Wi-Fi SSID.
 - `set wifi.pwd <password>`: sets the Wi-Fi password.
 - `get wifi.powersaving`: shows the current Wi-Fi power save mode.
 - `set wifi.powersaving none|min|max`: sets Wi-Fi power saving mode.
+- `wifi reconnect`: drops the current association and rejoins from a full channel scan. Use when a node reports connected but is unreachable over the network.
+
+Observers also run a connectivity watchdog: while Wi-Fi reports connected, the node ARP-probes its gateway every 30 seconds. If the gateway stays silent for 3 minutes (for example, an AP that keeps beaconing after losing its wired uplink), the node forces a full reconnect on its own, backing off up to 48 minutes between attempts while the outage persists. `wd:<n>` in `get wifi.status` counts these forced reconnects since boot.
 
 ### NTP Settings For Observers
 
@@ -166,7 +169,7 @@ Example:
 
 ```text
 > get wifi.status
-> ssid:EastMesh-IoT status:connected code:3 state:connected ip:192.168.1.50 channel:6 rssi:-61 quality:78% signal:good
+> ssid:EastMesh-IoT status:connected code:3 state:connected ip:192.168.1.50 channel:6 rssi:-61 quality:78% signal:good gw:ok wd:0
 > get bridge.channel
 > 1
 > set bridge.channel 6

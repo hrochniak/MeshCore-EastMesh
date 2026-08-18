@@ -92,6 +92,24 @@ releases:
     breaking_changes:
       - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
 
+  - track: companion-wifi
+    version: "1.17.1"
+    tag: "companion-wifi-v1.17.1"
+    date: "2026-08-15"
+    previous_version: "1.17.0"
+    summary: "Updates companion WiFi firmware to upstream MeshCore v1.17.1 with radio gain and board fixes."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Updated the companion WiFi firmware base to upstream MeshCore v1.17.1."
+      - type: fixed
+        area: radio
+        text: "Kept the user-configured RX boosted gain setting after an automatic gain control reset instead of reverting to the compiled-in default (SX126x radios)."
+      - type: changed
+        area: board
+        text: "Included upstream board, radio, display, and platform fixes from MeshCore dev, including external FEM gain groundwork for companion builds."
+    breaking_changes: []
+
   - track: repeater-bridge-espnow
     version: "1.15.0"
     tag: "repeater-bridge-espnow-v1.15.0"
@@ -143,6 +161,30 @@ releases:
         text: "Included upstream board, radio, display, and platform fixes from MeshCore dev, including new board support and an external watchdog manager."
     breaking_changes:
       - "Saved settings move to the new `prefs.json` format on first boot; downgrading to earlier firmware afterwards reverts the device to the old (pre-migration) settings file."
+
+  - track: repeater-bridge-espnow
+    version: "1.17.1"
+    tag: "repeater-bridge-espnow-v1.17.1"
+    date: "2026-08-15"
+    previous_version: "1.17.0"
+    summary: "Updates repeater ESP-NOW bridge firmware to upstream MeshCore v1.17.1 with reply-routing improvements and radio gain fixes."
+    changes:
+      - type: changed
+        area: upstream
+        text: "Updated the repeater ESP-NOW bridge firmware base to upstream MeshCore v1.17.1."
+      - type: changed
+        area: mesh
+        text: "Improved reply routing: direct requests now reply over the stored return path when one is known, and replies fall back to the repeater's default scope when the request scope is unknown, instead of always flooding un-scoped."
+      - type: fixed
+        area: radio
+        text: "Kept the user-configured RX boosted gain setting after an automatic gain control reset instead of reverting to the compiled-in default (SX126x radios)."
+      - type: added
+        area: cli
+        text: "Added `get radio.fem.txgain` and `set radio.fem.txgain on|off` for boards with a controllable external FEM PA gain (such as Station G3)."
+      - type: changed
+        area: board
+        text: "Included upstream board, radio, display, and platform fixes from MeshCore dev."
+    breaking_changes: []
 
   - track: observer-eastmesh
     version: "2026.5.1"
@@ -389,6 +431,33 @@ releases:
         text: "Made a failed or absent SH1106 display boot the node headless instead of crash-looping: display operations are now safe no-ops when the boot-time initialisation did not succeed."
     breaking_changes: []
 
+  - track: observer-eastmesh
+    version: "2026.8.2"
+    tag: "observer-eastmesh-v2026.8.2"
+    date: "2026-08-15"
+    previous_version: "2026.8.1"
+    summary: "Adds a Wi-Fi gateway connectivity watchdog so observers recover from APs that stay associated after losing their uplink, and updates to upstream MeshCore v1.17.1."
+    changes:
+      - type: added
+        area: wifi
+        text: "Added a gateway connectivity watchdog: while connected, the node ARP-probes its gateway every 30 seconds, and if the gateway stays silent for 3 minutes it forces a full disconnect and rescan so the node can roam to a healthy AP, backing off up to 48 minutes between attempts while the outage persists."
+      - type: added
+        area: cli
+        text: "Added `wifi reconnect` to drop the current association and rejoin from a full channel scan, for nodes that report connected but are unreachable over the network."
+      - type: changed
+        area: cli
+        text: "Extended `get wifi.status` with gateway health (`gw:ok|lost`) and the watchdog reconnect count (`wd:<n>`), which the web panel now also shows."
+      - type: changed
+        area: upstream
+        text: "Merged upstream MeshCore v1.17.1 including improved reply routing (direct requests reply over known return paths, and replies fall back to the default scope when the request scope is unknown), LR2021 radio improvements, and board/platform fixes."
+      - type: fixed
+        area: radio
+        text: "Kept the user-configured RX boosted gain setting after an automatic gain control reset instead of reverting to the compiled-in default (SX126x radios)."
+      - type: fixed
+        area: board
+        text: "Adopted upstream's SH1106 display address fallback (0x3C/0x3D) so board revisions with the other SA0 strap setting still get a working display, while keeping the EastMesh T-Beam S3 Supreme bring-up order and headless fallback."
+    breaking_changes: []
+
   - track: observer-eastmesh-bridge-espnow
     version: "2026.5.1"
     tag: "observer-eastmesh-bridge-espnow-v2026.5.1"
@@ -632,4 +701,31 @@ releases:
       - type: fixed
         area: board
         text: "Made a failed or absent SH1106 display boot the node headless instead of crash-looping: display operations are now safe no-ops when the boot-time initialisation did not succeed."
+    breaking_changes: []
+
+  - track: observer-eastmesh-bridge-espnow
+    version: "2026.8.2"
+    tag: "observer-eastmesh-bridge-espnow-v2026.8.2"
+    date: "2026-08-15"
+    previous_version: "2026.8.1"
+    summary: "Adds the Wi-Fi gateway connectivity watchdog to Observer ESP-NOW bridge builds and updates to upstream MeshCore v1.17.1."
+    changes:
+      - type: added
+        area: wifi
+        text: "Added a gateway connectivity watchdog: while connected, the node ARP-probes its gateway every 30 seconds, and if the gateway stays silent for 3 minutes it forces a full disconnect and rescan so the node can roam to a healthy AP, backing off up to 48 minutes between attempts while the outage persists."
+      - type: added
+        area: cli
+        text: "Added `wifi reconnect` to drop the current association and rejoin from a full channel scan, for nodes that report connected but are unreachable over the network."
+      - type: changed
+        area: cli
+        text: "Extended `get wifi.status` with gateway health (`gw:ok|lost`) and the watchdog reconnect count (`wd:<n>`), which the web panel now also shows."
+      - type: changed
+        area: upstream
+        text: "Merged upstream MeshCore v1.17.1 including improved reply routing (direct requests reply over known return paths, and replies fall back to the default scope when the request scope is unknown), LR2021 radio improvements, and board/platform fixes."
+      - type: fixed
+        area: radio
+        text: "Kept the user-configured RX boosted gain setting after an automatic gain control reset instead of reverting to the compiled-in default (SX126x radios)."
+      - type: fixed
+        area: board
+        text: "Adopted upstream's SH1106 display address fallback (0x3C/0x3D) so board revisions with the other SA0 strap setting still get a working display, while keeping the EastMesh T-Beam S3 Supreme bring-up order and headless fallback."
     breaking_changes: []
