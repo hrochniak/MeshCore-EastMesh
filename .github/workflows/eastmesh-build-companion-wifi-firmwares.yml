@@ -24,7 +24,7 @@ jobs:
         uses: ./.github/actions/setup-build-environment
 
       - name: Build Firmwares
-        run: /usr/bin/env bash eastmesh-build.sh build-companion-wifi-firmwares
+        run: /usr/bin/env bash eastmesh-build.sh build-firmware Xiao_S3_WIO_companion_radio_wifi
 
       - name: Upload Workflow Artifacts
         uses: actions/upload-artifact@v7
@@ -36,7 +36,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: Companion WiFi Firmware ${{ env.RELEASE_VERSION }}
-          body: ""
-          draft: true
+          name: Companion WiFi Firmware ${{ github.ref_name }}
+          body: "Release generated automatically from tag ${{ github.ref_name }}."
+          draft: false
           files: out/*

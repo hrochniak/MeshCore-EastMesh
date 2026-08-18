@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup-build-environment
 
       - name: Build Firmwares
-        run: /usr/bin/env bash eastmesh-build.sh build-observer-firmwares
+        run: /usr/bin/env bash eastmesh-build.sh build-firmware Xiao_S3_WIO_repeater_observer
 
       - name: Upload Workflow Artifacts
         uses: actions/upload-artifact@v7
@@ -35,7 +35,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: Observer EastMesh Firmware ${{ env.RELEASE_VERSION }}
-          body: ""
-          draft: true
+          name: Observer EastMesh Firmware ${{ github.ref_name }}
+          body: "Release generated automatically from tag ${{ github.ref_name }}."
+          draft: false
           files: out/*
