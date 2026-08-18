@@ -23,7 +23,7 @@ jobs:
         uses: ./.github/actions/setup-build-environment
 
       - name: Build Firmwares
-        run: /usr/bin/env bash eastmesh-build.sh build-firmware Xiao_S3_WIO_repeater_observer
+        run: /usr/bin/env bash eastmesh-build.sh build-firmware Xiao_S3_WIO_repeater_observer LilyGo_TLora_V2_1_1_6_repeater_observer_no_web
 
       - name: Upload Workflow Artifacts
         uses: actions/upload-artifact@v7

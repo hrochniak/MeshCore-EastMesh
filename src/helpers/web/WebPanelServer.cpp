@@ -4266,7 +4266,7 @@ esp_err_t WebPanelServer::handleMqttCa2Delete(httpd_req_t* req) {
 #else
 
 WebPanelServer::WebPanelServer()
-    : _fs(nullptr), _runner(nullptr) {
+    : _runner(nullptr) {
 }
 
 void WebPanelServer::setCommandRunner(WebPanelCommandRunner* runner) {

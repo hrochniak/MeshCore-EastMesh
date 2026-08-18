@@ -22,6 +22,8 @@ jobs:
         environment:
           - Xiao_S3_WIO_repeater_observer
           - Xiao_S3_WIO_companion_radio_wifi
+          - LilyGo_TLora_V2_1_1_6_repeater_observer_no_web
+          - LilyGo_TLora_V2_1_1_6_companion_radio_wifi
 
     steps:
       - name: Clone Repo
